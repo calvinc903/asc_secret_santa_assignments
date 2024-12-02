@@ -1,14 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, Suspense } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
-
-export default function LoadingPage() {
+function LoadingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const gifter = searchParams.get('gifter');
-
 
   useEffect(() => {
     const handleVideoEnd = () => {
@@ -42,5 +41,13 @@ export default function LoadingPage() {
         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
       />
     </div>
+  );
+}
+
+export default function LoadingPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoadingContent />
+    </Suspense>
   );
 }

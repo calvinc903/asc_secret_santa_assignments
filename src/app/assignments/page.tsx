@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Box, Stack, Text } from '@chakra-ui/react';
 import HandwritingText from '../../components/HandwritingText.js';
@@ -12,15 +12,12 @@ interface DataItem {
   timestamp: string;
 }
 
-export default function AssignmentsPage() {
-
+function GifteeDisplay({ gifter }: { gifter: string }) {
   const [giftee, setGiftee] = useState<string>('');
-  const searchParams = useSearchParams();
-  const gifter = searchParams.get('gifter');
 
   useEffect(() => {
     async function fetchData() {
-      const response = await fetch(`/api/assignments?gifter=${encodeURIComponent(gifter ?? '')}`);
+      const response = await fetch(`/api/assignments?gifter=${encodeURIComponent(gifter)}`);
       const assignments: DataItem[] = await response.json();
       if (assignments.length > 0) {
         const recipient = assignments[0].recipient;
@@ -38,16 +35,37 @@ export default function AssignmentsPage() {
     <Box
       bg="#f24236"
       height="100vh"
-      width="100vw" // Set the width to be the entire page
+      width="100vw"
       display="flex"
       justifyContent="center"
       alignItems="center"
-      p={4} // Add padding to the Box
+      p={4}
     >
       <Stack align="center" width="100%">
-        <Text fontWeight="bold" color="white" fontSize="4xl">Your giftee is...</Text> 
+        <Text fontWeight="bold" color="white" fontSize="4xl">Your giftee is...</Text>
         <HandwritingText text={giftee} />
       </Stack>
     </Box>
+  );
+}
+
+function AssignmentsContent() {
+  const searchParams = useSearchParams();
+  const gifter = searchParams.get('gifter');
+
+  return gifter ? (
+    <Suspense fallback={<div>Loading giftee information...</div>}>
+      <GifteeDisplay gifter={gifter} />
+    </Suspense>
+  ) : (
+    <div>No gifter specified</div>
+  );
+}
+
+export default function AssignmentsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AssignmentsContent />
+    </Suspense>
   );
 }
