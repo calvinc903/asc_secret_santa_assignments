@@ -4,7 +4,7 @@ import Vara from 'vara';
 
 const HandwritingText = ({ text }) => {
   useEffect(() => {
-    const vara = new Vara(
+    new Vara(
       '#vara-container',
       'https://raw.githubusercontent.com/akzhy/Vara/master/fonts/Satisfy/SatisfySL.json',
       [
