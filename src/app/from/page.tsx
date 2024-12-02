@@ -59,7 +59,7 @@ export default function FromPage() {
           Step into the holiday spirit!
         </Text>
         <Text fontSize="4xl" color="white" fontWeight="bold">
-          What's your name?
+          What&apos;s your name?
         </Text>
         <Input
           ref={inputRef}
