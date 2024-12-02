@@ -1,7 +1,7 @@
 # Extra Features
-[ ] Confetti on getting person
-[ ] blocking from hitting submit unless data found in mongodb
-[ ] lowercase names on submission
+-[ ] Confetti on getting person
+-[ ] blocking from hitting submit unless data found in mongodb
+-[ ] lowercase names on submission
 
 
 
