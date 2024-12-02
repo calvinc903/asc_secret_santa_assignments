@@ -60,7 +60,7 @@ export default function Home() {
           className="bg-white hover:bg-gray-100 text-red-500 font-bold py-2 px-6 rounded"
           onClick={() => window.location.href = "/from"}
         >
-          Start
+          Get Started
         </button>
       </Stack>
       <style>{`
