@@ -14,6 +14,7 @@ interface DataItem {
 
 function GifteeDisplay({ gifter }: { gifter: string }) {
   const [giftee, setGiftee] = useState<string>('');
+  const [message, setMessage] = useState<string>('');
 
   useEffect(() => {
     async function fetchData() {
@@ -21,9 +22,9 @@ function GifteeDisplay({ gifter }: { gifter: string }) {
       const assignments: DataItem[] = await response.json();
       if (assignments.length > 0) {
         const recipient = assignments[0].recipient;
-        setGiftee(recipient);
+        setGiftee(capitalizeName(recipient));
       } else {
-        setGiftee('No assignments found');
+        setGiftee('n/a');
       }
     }
     if (gifter) {
@@ -31,6 +32,25 @@ function GifteeDisplay({ gifter }: { gifter: string }) {
     }
   }, [gifter]);
 
+  useEffect(() => {
+    const messages = [
+      "Let the festive fun begin! Your match is...",
+      "Make someone's day special! Your giftee is...",
+      "Your holiday mission: Surprise...",
+    ];
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    setMessage(randomMessage);
+  
+  }, [])
+
+  function capitalizeName(name: string): string {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  }
+
+  
   return (
     <Box
       bg="#f24236"
@@ -42,7 +62,7 @@ function GifteeDisplay({ gifter }: { gifter: string }) {
       p={4}
     >
       <Stack align="center" width="100%">
-        <Text fontWeight="bold" color="white" fontSize="4xl">Your giftee is...</Text>
+        <Text fontWeight="bold" color="white" fontSize="4xl">{message}</Text>
         <HandwritingText text={giftee} />
       </Stack>
     </Box>
@@ -58,7 +78,7 @@ function AssignmentsContent() {
       <GifteeDisplay gifter={gifter} />
     </Suspense>
   ) : (
-    <div>No gifter specified</div>
+    <div>n/a</div>
   );
 }
 

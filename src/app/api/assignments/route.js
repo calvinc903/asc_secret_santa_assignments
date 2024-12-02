@@ -6,7 +6,7 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const query = {};
         if (searchParams.has('gifter')) {
-            query.gifter = searchParams.get('gifter');
+            query.gifter = searchParams.get('gifter').toLowerCase();
         }
         if (searchParams.has('recipient')) {
             query.recipient = searchParams.get('recipient');
@@ -31,7 +31,8 @@ export async function POST(request) {
 export async function PATCH(request) {
     try {
         const { names } = await request.json();
-        const pairs = generatePairs(names);
+        const lowerCaseNames = names.map(name => name.toLowerCase());
+        const pairs = generatePairs(lowerCaseNames);
         const result = await patchAssignmentsDB(pairs);
         return NextResponse.json(result, { status: 200 });
     } catch (error) {

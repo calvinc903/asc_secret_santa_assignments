@@ -1,14 +1,13 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Box, Button, Stack, Text, Input } from '@chakra-ui/react';
+import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-
 
 export default function FromPage() {
   const [name, setName] = useState('');
-  const [gifterState, setGifter] = useState('');
-  // const [showLoadingPage, setShowLoadingPage] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -18,12 +17,33 @@ export default function FromPage() {
     }
   }, []);
 
-  useEffect(() => {
-    if (gifterState) {
-      router.push(`/loadingPage?gifter=${encodeURIComponent(gifterState)}`);    
+  const fetchData = async (query: string) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`/api/assignments?gifter=${query.toLowerCase().trim()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.length == 1) {
+        router.push(`/loadingPage?gifter=${encodeURIComponent(query)}`);
+      } else {
+        // Handle the case where the response is empty
+        // For example, you might want to display a message to the user
+      }
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLoading(false);
     }
-  }, [gifterState, router]);
+  };
 
+  const handleSubmit = () => {
+    if (name.trim()) {
+      fetchData(name.toLowerCase());
+    }
+  };
 
   return (
     <Box
@@ -32,11 +52,14 @@ export default function FromPage() {
       display="flex"
       justifyContent="center"
       alignItems="center"
-      p={4} // Add padding to the Box
+      p={4}
     >
       <Stack alignItems="center">
         <Text fontSize="4xl" color="white" fontWeight="bold">
-          Enter your Name
+          Step into the holiday spirit!
+        </Text>
+        <Text fontSize="4xl" color="white" fontWeight="bold">
+          What's your name?
         </Text>
         <Input
           ref={inputRef}
@@ -48,7 +71,7 @@ export default function FromPage() {
           borderColor="white"
           color="#f24236"
           bg="white"
-          p={4} // Add padding to the Input box
+          p={4}
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
@@ -58,14 +81,20 @@ export default function FromPage() {
           color="#f24236"
           fontWeight="bold"
           py={2}
-          px={4} // Adjust padding to make the button less wide
+          px={4}
           borderRadius="md"
           _hover={{ bg: 'gray.100' }}
           width="200px"
-          onClick={() => setGifter(name)}
+          onClick={handleSubmit}
+          disabled={loading}
         >
-          Submit
+          {loading ? <Spinner size="sm" /> : 'Submit'}
         </Button>
+        {error && (
+          <Text color="yellow.300" fontSize="md">
+            {error}
+          </Text>
+        )}
       </Stack>
     </Box>
   );
