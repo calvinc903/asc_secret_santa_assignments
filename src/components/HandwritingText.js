@@ -4,7 +4,8 @@ import Vara from 'vara';
 
 const HandwritingText = ({ text }) => {
   useEffect(() => {
-    new Vara(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const vara = new Vara(
       '#vara-container',
       'https://raw.githubusercontent.com/akzhy/Vara/master/fonts/Satisfy/SatisfySL.json',
       [

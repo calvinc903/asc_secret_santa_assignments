@@ -6,6 +6,7 @@ export async function GET() {
         const data = await getAssignmentsDB();
         return NextResponse.json(data);
     } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         return NextResponse.json({ error: 'Failed to fetch assignments' }, { status: 500 });
     }
 }
@@ -16,6 +17,7 @@ export async function POST(request) {
         const result = await postAssignmentsDB(requestData);
         return NextResponse.json(result, { status: 201 });
     } catch (error) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         return NextResponse.json({ error: 'Failed to post assignment' }, { status: 500 });
     }
 }
