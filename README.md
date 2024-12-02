@@ -1,8 +1,11 @@
+# Need to do
+- [ ] Block submission unless data is found in MongoDB
+- [ ] Automatically lowercase names on submission
+
 # Extra Features
 
 - [ ] Confetti effect when retrieving a person
-- [ ] Block submission unless data is found in MongoDB
-- [ ] Automatically lowercase names on submission
+
 
 
 
