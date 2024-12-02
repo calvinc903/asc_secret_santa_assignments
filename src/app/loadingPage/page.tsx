@@ -3,18 +3,14 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
-interface LoadingPageProps {
-  gifter: string;
-}
-
-export default function LoadingPage({ gifter }: LoadingPageProps) {
+export default function LoadingPage({ gifter }: { gifter: string }) {
   const router = useRouter();
 
   useEffect(() => {
-    // console.log("LoadingPage received gifter:", gifter); // Debugging statement
+    console.log("LoadingPage received gifter:", gifter); // Debugging statement
 
     const handleVideoEnd = () => {
-      // console.log("loading screen " + gifter);
+      console.log("loading screen " + gifter);
       router.push(`/assignments?gifter=${encodeURIComponent(gifter)}`);
     };
 
