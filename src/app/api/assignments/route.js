@@ -42,13 +42,20 @@ export async function PATCH(request) {
 function generatePairs(names) {
     const shuffled = names.slice().sort(() => Math.random() - 0.5);
     const pairs = [];
+    const usedRecipients = new Set();
+
     for (let i = 0; i < names.length; i++) {
         const gifter = names[i];
-        const recipient = shuffled[i];
-        if (gifter === recipient) {
-            return generatePairs(names); // Retry if a name is matched to itself
+        let recipient = shuffled[i];
+
+        // Ensure gifter is not matched to themselves and no reciprocal matches
+        while (gifter === recipient || usedRecipients.has(recipient) || pairs.some(pair => pair.recipient === gifter && pair.gifter === recipient)) {
+            recipient = shuffled[Math.floor(Math.random() * shuffled.length)];
         }
+
         pairs.push({ gifter, recipient });
+        usedRecipients.add(recipient);
     }
+
     return pairs;
 }
