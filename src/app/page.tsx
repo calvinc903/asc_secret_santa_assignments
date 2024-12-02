@@ -1,101 +1,117 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect } from "react";
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  useEffect(() => {
+    const myDate = new Date();
+    const xmas = Date.parse(`Dec 25, ${myDate.getFullYear()}`);
+    const today = Date.parse(myDate.toString());
+  
+    const daysToChristmas = Math.round((xmas - today) / (1000 * 60 * 60 * 24));
+  
+    const daysElement = document.getElementById("days");
+    if (daysElement) {
+      if (daysToChristmas === 0) {
+        daysElement.textContent = "It's Christmas!! Merry Christmas!";
+      } else if (daysToChristmas < 0) {
+        daysElement.textContent = `Christmas was ${-1 * daysToChristmas} days ago.`;
+      } else {
+        daysElement.textContent = `${daysToChristmas} days to Christmas!`;
+      }
+    }
+  
+    // Snow effect
+    const snowDrop = (num: number) => {
+      for (let i = 0; i < num; i++) {
+        const drop = document.createElement("div");
+        drop.className = "drop snow";
+        drop.id = `drop_${i}`;
+        drop.style.left = `${randomInt(0, window.innerWidth)}px`; // Spread across full screen width
+        drop.style.top = `-${randomInt(0, 50)}px`; // Start slightly above the viewport
+        drop.style.animationDelay = `${randomInt(0, 5)}s`; // Random delay for staggered start
+        drop.style.animationDuration = `${randomInt(5, 10)}s`; // Random duration for varied speeds
+  
+        document.body.appendChild(drop);
+        drop.classList.add("animate"); // Ensure the animation class is applied
+      }
+    };
+  
+    const randomInt = (min: number, max: number) => {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    };
+  
+    // Generate snowflakes
+    snowDrop(35);
+  }, []);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  return (
+    <div className="container">
+      <h1 id="title">ASC Secret Santa 2024</h1>
+      {/* <input type="text" id="nameInput" placeholder="What is your Name?" /> */}
+      {/* <p id="days"></p> */}
+      <style jsx global>{`
+        @import url("https://fonts.googleapis.com/css?family=Cookie");
+
+        body {
+          background-color: #f24236;
+          margin: 0;
+          padding: 0;
+          width: 100%;
+          height: 100vh;
+          font-family: "Cookie", cursive;
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          position: relative;
+        }
+
+        .container {
+          text-align: center;
+        }
+
+        #days {
+          font-size: 50px;
+          color: #fff;
+          letter-spacing: 3px;
+        }
+        #title {
+        font-size: 120px;
+        color: #fff;
+        letter-spacing: 3px;
+        }
+
+        .drop {
+          position: absolute;
+          top: 0;
+          z-index: -1;
+          opacity: 0;
+        }
+
+        .snow {
+          height: 8px;
+          width: 8px;
+          border-radius: 50%;
+          background-color: #fff;
+          box-shadow: 0 0 10px #fff;
+        }
+
+        .animate {
+          animation: falling 6s infinite ease-in; /* Faster animation for dynamic effect */
+        }
+
+        @keyframes falling {
+          0% {
+            top: 0;
+            opacity: 1;
+          }
+          100% {
+            top: 150vh; /* Snow falls further */
+            opacity: 0;
+          }
+        }
+      `}</style>
     </div>
   );
-}
+};
