@@ -9,15 +9,11 @@ export default function LoadingPage() {
   const searchParams = useSearchParams();
   const gifter = searchParams.get('gifter');
 
-  const nextPage = () => {
-      console.log("LoadingPage received gifter:", gifter); // Debugging statement
-      router.push(`/assignments?gifter=${gifter}`);
-  }
-
 
   useEffect(() => {
     const handleVideoEnd = () => {
-      nextPage();
+      console.log("LoadingPage received gifter:", gifter); // Debugging statement
+      router.push(`/assignments?gifter=${gifter}`);
     };
     const videoElement = document.getElementById('loading-video') as HTMLVideoElement;
     videoElement.addEventListener('ended', handleVideoEnd);
@@ -25,7 +21,7 @@ export default function LoadingPage() {
     return () => {
       videoElement.removeEventListener('ended', handleVideoEnd);
     };
-  }, [router]);
+  }, [router, gifter]);
 
   return (
     <div

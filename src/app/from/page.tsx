@@ -22,7 +22,7 @@ export default function FromPage() {
     if (gifterState) {
       router.push(`/loadingPage?gifter=${encodeURIComponent(gifterState)}`);    
     }
-  }, [gifterState]);
+  }, [gifterState, router]);
 
 
   return (

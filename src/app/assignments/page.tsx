@@ -12,7 +12,7 @@ interface DataItem {
   timestamp: string;
 }
 
-export default function assignmentsPage() {
+export default function AssignmentsPage() {
 
   const [giftee, setGiftee] = useState<string>('');
   const searchParams = useSearchParams();
