@@ -34,8 +34,8 @@ function GifteeDisplay({ gifter }: { gifter: string }) {
 
   useEffect(() => {
     const messages = [
-      "Let the festive fun begin! Your match is...",
-      "Make someone's day special! Your giftee is...",
+      // "Let the festive fun begin! Your match is...",
+      // "Make someone's day special! Your giftee is...",
       "Your holiday mission: Surprise...",
     ];
     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
