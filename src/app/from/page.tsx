@@ -29,8 +29,7 @@ export default function FromPage() {
       if (data.length == 1) {
         router.push(`/loadingPage?gifter=${encodeURIComponent(query)}`);
       } else {
-        // Handle the case where the response is empty
-        // For example, you might want to display a message to the user
+        alert('You are not on the list!');
       }
     } catch (err) {
       setError((err as Error).message);
