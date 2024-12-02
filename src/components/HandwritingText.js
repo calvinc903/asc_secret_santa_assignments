@@ -9,11 +9,13 @@ const HandwritingText = ({ text }) => {
       '#vara-container',
       'https://raw.githubusercontent.com/akzhy/Vara/master/fonts/Satisfy/SatisfySL.json',
       [
-        {
-          text,
-          fontSize: 40,
-          strokeWidth: 0.7,
-        },
+      {
+        text,
+        fontSize: 50,
+        strokeWidth: 1.5,
+        color: '#FFFFFF',
+        textAlign: "center",
+      },
       ]
     );
 
