@@ -1,3 +1,10 @@
+# Extra Features
+[ ] Confetti on getting person
+[ ] blocking from hitting submit unless data found in mongodb
+[ ] lowercase names on submission
+
+
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
