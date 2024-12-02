@@ -1,26 +1,31 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function LoadingPage({ gifter }: { gifter: string }) {
+
+export default function LoadingPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const gifter = searchParams.get('gifter');
+
+  const nextPage = () => {
+      console.log("LoadingPage received gifter:", gifter); // Debugging statement
+      router.push(`/assignments?gifter=${gifter}`);
+  }
+
 
   useEffect(() => {
-    console.log("LoadingPage received gifter:", gifter); // Debugging statement
-
     const handleVideoEnd = () => {
-      console.log("loading screen " + gifter);
-      router.push(`/assignments?gifter=${encodeURIComponent(gifter)}`);
+      nextPage();
     };
-
     const videoElement = document.getElementById('loading-video') as HTMLVideoElement;
     videoElement.addEventListener('ended', handleVideoEnd);
 
     return () => {
       videoElement.removeEventListener('ended', handleVideoEnd);
     };
-  }, [gifter, router]);
+  }, [router]);
 
   return (
     <div

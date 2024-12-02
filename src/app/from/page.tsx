@@ -1,16 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Box, Button, Stack, Text, Input } from '@chakra-ui/react';
-import LoadingPage from '../loadingPage/page'; // Adjust the import path as necessary
+import { useRouter } from 'next/navigation';
 
-export default function HomePage() {
-  const router = useRouter();
+
+export default function FromPage() {
   const [name, setName] = useState('');
   const [gifterState, setGifter] = useState('');
-  const [showLoadingPage, setShowLoadingPage] = useState(false);
+  // const [showLoadingPage, setShowLoadingPage] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (inputRef.current) {
@@ -20,14 +20,10 @@ export default function HomePage() {
 
   useEffect(() => {
     if (gifterState) {
-      // console.log(`Navigating to loading page with gifter: ${gifterState}`);
-      setShowLoadingPage(true);
+      router.push(`/loadingPage?gifter=${encodeURIComponent(gifterState)}`);    
     }
   }, [gifterState]);
 
-  if (showLoadingPage) {
-    return <LoadingPage gifter={gifterState} />;
-  }
 
   return (
     <Box

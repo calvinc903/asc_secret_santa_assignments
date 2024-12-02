@@ -12,14 +12,14 @@ interface DataItem {
   timestamp: string;
 }
 
-export default function Home() {
+export default function assignmentsPage() {
+
   const [giftee, setGiftee] = useState<string>('');
   const searchParams = useSearchParams();
   const gifter = searchParams.get('gifter');
 
   useEffect(() => {
     async function fetchData() {
-      // console.log("Assignment Page Received gifter: ", gifter); // Debugging statement
       const response = await fetch(`/api/assignments?gifter=${encodeURIComponent(gifter ?? '')}`);
       const assignments: DataItem[] = await response.json();
       if (assignments.length > 0) {
