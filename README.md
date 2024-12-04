@@ -1,5 +1,7 @@
-# Need to do
+# Known Bugs
 - [ ] On safari the animation stars like 3 seconds in... need to figure out why this is the case.
+
+# Need to do
 - [x] Block submission unless data is found in MongoDB
 - [x] Automatically lowercase names on submission
 
