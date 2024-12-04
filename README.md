@@ -1,6 +1,7 @@
 # Need to do
-- [ ] Block submission unless data is found in MongoDB
-- [ ] Automatically lowercase names on submission
+- [ ] On safari the animation stars like 3 seconds in... need to figure out why this is the case.
+- [x] Block submission unless data is found in MongoDB
+- [x] Automatically lowercase names on submission
 
 # Extra Features
 
