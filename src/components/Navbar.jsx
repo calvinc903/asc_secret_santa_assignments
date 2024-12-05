@@ -28,8 +28,6 @@ export default function CustomNavbar() {
       label: 'Gifts Spreadsheet',
       href: 'https://docs.google.com/spreadsheets/d/1Nvjh48RAc9l-lNNdLw5dhgJpnLsdOGNO7uNFatB1NuA/edit?gid=1912476070#gid=1912476070',
     },
-    { label: 'Sign Up', href: '/sign-up' },
-    { label: 'Login', href: '/login' },
   ];
 
   return (
@@ -72,8 +70,8 @@ export default function CustomNavbar() {
           justify="center"
           width="100%"
         >
-          {menuItems.slice(0, 4).map((item) => {
-            const isActive = currentPath === item.href; // Check if the current path matches the item's href
+          {menuItems.map((item) => {
+            const isActive = currentPath === item.href;
             return (
               <NavbarItem key={item.label} isActive={isActive}>
                 <Link
@@ -120,70 +118,111 @@ export default function CustomNavbar() {
           position: 'fixed',
           right: 0,
           top: 0,
+          height: '100vh', // Full viewport height
           width: '300px',
           backgroundColor: '#f24236',
           color: '#fff',
           transform: isMenuOpen ? 'translateX(0)' : 'translateX(100%)',
           transition: 'transform 0.3s ease-in-out',
           zIndex: 1000,
-          paddingLeft: '20px', // Add padding to align text with Santa hat
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'space-between', // Space between menu items and buttons
+          paddingLeft: '20px',
+          boxShadow: 'rgba(0, 0, 0, 0.5) 0px 0px 10px', // Added shadow effect
         }}
       >
-        {/* Logo and Header */}
-        <NavbarMenuItem>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '20px 0', // Add spacing around the logo and text
-            }}
-          >
-            <Image
-              src={SantaHatImage}
-              alt="Santa Hat Icon"
-              width={50}
-              height={50}
-            />
-            <p
+        <div>
+          {/* Logo and Header */}
+          <NavbarMenuItem>
+            <div
               style={{
-                color: '#fff',
-                fontWeight: 'bold',
-                fontSize: '18px',
-                margin: 0,
-                textAlign: 'left',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '20px 0',
               }}
             >
-              ASC Secret Santa
-            </p>
-          </div>
-        </NavbarMenuItem>
-
-        {/* Menu Items */}
-        {menuItems.map((item) => {
-          const isActive = currentPath === item.href; // Check if the current path matches the item's href
-          return (
-            <NavbarMenuItem
-              key={item.label}
-              style={{
-                textAlign: 'left', // Ensure text is left-aligned
-                paddingLeft: '60px', // Add left padding to align with the Santa hat
-              }}
-            >
-              <Link
+              <Image
+                src={SantaHatImage}
+                alt="Santa Hat Icon"
+                width={50}
+                height={50}
+              />
+              <p
                 style={{
-                  color: 'white',
-                  fontWeight: isActive ? 'bold' : 'normal', // Bold active item
-                  textDecoration: 'none',
+                  color: '#fff',
+                  fontWeight: 'bold',
+                  fontSize: '18px',
+                  margin: 0,
+                  textAlign: 'left',
                 }}
-                href={item.href}
               >
-                {item.label}
-              </Link>
-            </NavbarMenuItem>
-          );
-        })}
-      </NavbarMenu>   
+                ASC Secret Santa
+              </p>
+            </div>
+          </NavbarMenuItem>
+
+          {/* Menu Items */}
+          {menuItems.map((item) => {
+            const isActive = currentPath === item.href;
+            return (
+              <NavbarMenuItem
+                key={item.label}
+                style={{
+                  textAlign: 'left',
+                  paddingLeft: '60px',
+                }}
+              >
+                <Link
+                  style={{
+                    color: 'white',
+                    fontWeight: isActive ? 'bold' : 'normal',
+                    textDecoration: 'none',
+                  }}
+                  href={item.href}
+                >
+                  {item.label}
+                </Link>
+              </NavbarMenuItem>
+            );
+          })}
+        </div>
+
+        {/* Sign Up and Login Buttons */}
+        <div
+          style={{
+            padding: '20px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.2)', // Optional: adds a separator line
+          }}
+        >
+          <Button
+            as={Link}
+            style={{
+              backgroundColor: '#fff',
+              color: '#f24236',
+              width: '100%',
+              marginBottom: '10px',
+            }}
+            href="/sign-up"
+            variant="solid"
+          >
+            Sign Up
+          </Button>
+          <Button
+            as={Link}
+            color="white"
+            style={{
+              color: '#fff',
+              width: '100%',
+            }}
+            href="/login"
+            variant="bordered"
+          >
+            Login
+          </Button>
+        </div>
+      </NavbarMenu>
     </Navbar>
   );
 }
