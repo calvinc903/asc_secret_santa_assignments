@@ -117,9 +117,9 @@ export default function CustomNavbar() {
         style={{
           position: 'fixed',
           right: 0,
-          top: 0,
-          height: '100vh', // Full viewport height
-          width: '300px',
+          top: '60px',
+          height: 'calc(100vh - 60px)',
+          width: '100vw',
           backgroundColor: '#f24236',
           color: '#fff',
           transform: isMenuOpen ? 'translateX(0)' : 'translateX(100%)',
@@ -129,40 +129,9 @@ export default function CustomNavbar() {
           flexDirection: 'column',
           justifyContent: 'space-between', // Space between menu items and buttons
           paddingLeft: '20px',
-          boxShadow: 'rgba(0, 0, 0, 0.5) 0px 0px 10px', // Added shadow effect
         }}
       >
         <div>
-          {/* Logo and Header */}
-          <NavbarMenuItem>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '20px 0',
-              }}
-            >
-              <Image
-                src={SantaHatImage}
-                alt="Santa Hat Icon"
-                width={50}
-                height={50}
-              />
-              <p
-                style={{
-                  color: '#fff',
-                  fontWeight: 'bold',
-                  fontSize: '18px',
-                  margin: 0,
-                  textAlign: 'left',
-                }}
-              >
-                ASC Secret Santa
-              </p>
-            </div>
-          </NavbarMenuItem>
-
           {/* Menu Items */}
           {menuItems.map((item) => {
             const isActive = currentPath === item.href;
@@ -171,7 +140,7 @@ export default function CustomNavbar() {
                 key={item.label}
                 style={{
                   textAlign: 'left',
-                  paddingLeft: '60px',
+                  paddingLeft: '10px',
                 }}
               >
                 <Link
@@ -192,6 +161,10 @@ export default function CustomNavbar() {
         {/* Sign Up and Login Buttons */}
         <div
           style={{
+            display: 'flex', // Enable flexbox layout
+            flexDirection: 'column', // Stack buttons vertically
+            alignItems: 'center', // Center buttons horizontally
+            justifyContent: 'center', // Optional for vertical centering if needed
             padding: '20px',
             borderTop: '1px solid rgba(255, 255, 255, 0.2)', // Optional: adds a separator line
           }}
@@ -202,7 +175,8 @@ export default function CustomNavbar() {
               backgroundColor: '#fff',
               color: '#f24236',
               width: '100%',
-              marginBottom: '10px',
+              maxWidth: '300px', // Restrict the width
+              marginBottom: '10px', // Space between buttons
             }}
             href="/sign-up"
             variant="solid"
@@ -215,6 +189,7 @@ export default function CustomNavbar() {
             style={{
               color: '#fff',
               width: '100%',
+              maxWidth: '300px', // Restrict the width
             }}
             href="/login"
             variant="bordered"
