@@ -19,6 +19,7 @@ import SantaHatImage from '../../public/Santa Red Hat Icon.png';
 export default function CustomNavbar() {
   const currentPath = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
 
   const menuItems = [
     { label: 'Home', href: '/' },
@@ -47,13 +48,15 @@ export default function CustomNavbar() {
       <div className="flex justify-between items-center w-full px-0">
         {/* Logo and Brand */}
         <NavbarBrand className="flex items-center">
-          <Image
-            src={SantaHatImage}
-            alt="Santa Hat Icon"
-            height={40}
-            style={{ marginRight: '10px' }}
-          />
-          <p className="font-bold text-inherit">ASC Secret Santa</p>
+          <Link href="/" className="flex items-center">
+            <Image
+              src={SantaHatImage}
+              alt="Santa Hat Icon"
+              height={40}
+              style={{ marginRight: '10px' }}
+            />
+            <p className="font-bold text-white">ASC Secret Santa</p>
+          </Link>
         </NavbarBrand>
 
         {/* Menu Toggle for Mobile */}
