@@ -22,7 +22,7 @@ export default function CustomNavbar() {
 
   const menuItems = [
     { label: 'Home', href: '/' },
-    { label: 'Find Your Match', href: '/from' },
+    { label: 'Reveal Your Giftee', href: '/from' },
     { label: 'Santas', href: '/santas' },
     {
       label: 'Gifts Spreadsheet',
@@ -155,10 +155,39 @@ export default function CustomNavbar() {
                 </Link>
               </NavbarMenuItem>
             );
-          })}
+            })}
+            <hr style={{ borderTop: '1px solid white', width: '38%', marginTop: '3px' }} />
+            <Button
+            as={Link}
+            style={{
+              backgroundColor: '#fff',
+              color: '#f24236',
+              width: '100%',
+              maxWidth: '100px', // Restrict the width
+              marginTop: '10px', // Space between buttons
+              marginRight: '10px', // Space between buttons
+            }}
+            href="/sign-up"
+            variant="solid"
+          >
+            Sign Up
+          </Button>
+          <Button
+            as={Link}
+            color="white"
+            style={{
+              color: '#fff',
+              width: '100%',
+              maxWidth: '100px', // Restrict the width
+            }}
+            href="/login"
+            variant="bordered"
+          >
+            Login
+          </Button>
         </div>
 
-        {/* Sign Up and Login Buttons */}
+        {/* Sign Up and Login Buttons
         <div
           style={{
             display: 'flex', // Enable flexbox layout
@@ -196,7 +225,7 @@ export default function CustomNavbar() {
           >
             Login
           </Button>
-        </div>
+        </div> */}
       </NavbarMenu>
     </Navbar>
   );
