@@ -38,9 +38,12 @@ export default function CustomNavbar() {
           </Link>
         </NavbarItem>
       </NavbarContent>
-      <NavbarContent className="hidden sm:flex gap-4" justify="end" width="100%">
+      <NavbarContent className="hidden sm:flex gap-8" justify="end" width="100%">
         <NavbarItem>
-          <Button as={Link} style={{ color: '#fff' }} href="#" variant="flat">
+          <Button as={Link} style={{ backgroundColor: '#fff', color: '#f24236', marginRight: '10px' }} href="#" variant="solid">
+            Sign Up
+          </Button>
+          <Button as={Link} color="white" style={{ color: '#fff' }} href="#" variant="bordered">
             Login
           </Button>
         </NavbarItem>

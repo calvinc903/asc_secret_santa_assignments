@@ -54,10 +54,10 @@ export default function Home() {
       <Stack align="center" justify="center">
         <Text fontWeight="bold" color="white" textStyle="7xl">ASC Secret Santa</Text>
         <Text fontWeight="normal" color="white" textStyle="7xl">2024</Text>
-        <Text id="days"></Text>
-        {/* <Button variant='solid' colorScheme='gray' onClick={() => window.location.href = "/from"} width="200px">Start</Button> */}
+        <Text fontWeight="bold" textStyle="2xl" color="white">________________________________________</Text>
+        <Text fontWeight="bold" textStyle="2xl" color="white" id="days"></Text>
         <button
-          className="bg-white hover:bg-gray-100 text-red-500 font-bold py-2 px-6 rounded"
+          className="bg-white hover:bg-gray-100 text-red-500 font-bold py-2 px-6 rounded mt-8"
           onClick={() => window.location.href = "/from"}
         >
           Get Started
@@ -84,11 +84,6 @@ export default function Home() {
           text-align: center;
         }
 
-        #days {
-          font-size: 50px;
-          color: #fff;
-          letter-spacing: 3px;
-        }
         #title {
           font-size: 120px;
           color: #fff;
