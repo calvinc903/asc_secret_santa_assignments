@@ -1,11 +1,19 @@
 // components/Navbar.jsx
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem, Link, Button } from "@nextui-org/react";
+import Image from 'next/image';
+import SantaHatImage from '../../public/Santa Red Hat Icon.png';
+
 
 export default function CustomNavbar() {
   return (
     <Navbar maxWidth="full" style={{ position: 'fixed', top: 0, width: '100%', zIndex: 1000, backgroundColor: '#f24236', color: '#fff'}}>
       <NavbarBrand>
-        <img src="/Santa Red Hat Icon.png" alt="Santa Hat" style={{ height: '40px', marginRight: '10px' }} />
+      <Image
+        src={SantaHatImage}
+        alt="Santa Hat Icon"
+        height={40} 
+        style={{ marginRight: '10px' }}
+      />
         <p className="font-bold text-inherit">ASC Secret Santa</p>
       </NavbarBrand>
       <NavbarContent className="hidden sm:flex gap-8" justify="center" width="100%">
