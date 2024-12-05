@@ -46,7 +46,7 @@ export default function CustomNavbar() {
         color: '#fff',
       }}
     >
-      <div className="flex justify-between items-center w-full px-4">
+      <div className="flex justify-between items-center w-full px-0">
         {/* Logo and Brand */}
         <NavbarBrand className="flex items-center">
           <Image
@@ -120,7 +120,7 @@ export default function CustomNavbar() {
           position: 'fixed',
           right: 0,
           top: 0,
-          width: '380px',
+          width: '300px',
           backgroundColor: '#f24236',
           color: '#fff',
           transform: isMenuOpen ? 'translateX(0)' : 'translateX(100%)',
