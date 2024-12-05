@@ -1,4 +1,3 @@
-import type { Config } from "tailwindcss";
 import { nextui } from "@nextui-org/react";
 
 export default {
@@ -10,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      screens: {
+        xxl: "920px", // Custom breakpoint at 884px
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -22,4 +24,4 @@ export default {
       addCommonColors: true,
     }),
   ],
-} satisfies Config;
+};

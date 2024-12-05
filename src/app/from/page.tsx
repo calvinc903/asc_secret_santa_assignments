@@ -71,6 +71,7 @@ export default function FromPage() {
           color="#f24236"
           bg="white"
           p={4}
+          mt={4}
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
@@ -79,13 +80,14 @@ export default function FromPage() {
           bg="white"
           color="#f24236"
           fontWeight="bold"
-          py={2}
+          py={4}
           px={4}
           borderRadius="md"
           _hover={{ bg: 'gray.100' }}
           width="200px"
           onClick={handleSubmit}
           disabled={loading}
+          mt={4}
         >
           {loading ? <Spinner size="sm" /> : 'Submit'}
         </Button>
