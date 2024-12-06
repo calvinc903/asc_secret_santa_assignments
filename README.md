@@ -1,7 +1,10 @@
 # Known Bugs
 - [ ] On safari the animation stars like 3 seconds in... need to figure out why this is the case.
 
-# Need to do
+# To Do
+- [ ] Santa's Page (displays a list of "cards" for each user
+- [ ] Create signup and login page
+- [ ] Design accounts system probably need sessions
 - [x] Block submission unless data is found in MongoDB
 - [x] Automatically lowercase names on submission
 
