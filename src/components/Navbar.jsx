@@ -159,16 +159,16 @@ export default function CustomNavbar() {
               </NavbarMenuItem>
             );
             })}
-            <hr style={{ borderTop: '1px solid white', width: '38%', marginTop: '3px' }} />
+            <hr style={{ borderTop: '1px solid white', width: '38%', marginTop: '20px' }} />
             <Button
             as={Link}
             style={{
               backgroundColor: '#fff',
               color: '#f24236',
               width: '100%',
-              maxWidth: '100px', // Restrict the width
-              marginTop: '10px', // Space between buttons
-              marginRight: '10px', // Space between buttons
+              maxWidth: '100px', 
+              marginTop: '20px', 
+              marginRight: '10px',
             }}
             href="/sign-up"
             variant="solid"
