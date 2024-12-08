@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 
-export default function FromPage() {
+export default function SignUpPage() {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,10 +54,10 @@ export default function FromPage() {
       p={4}
     >
       <Stack alignItems="center">
-        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
-          Step into the holiday spirit!
-        </Text>
-        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
+        <Text fontSize="4xl" color="white" fontWeight="bold">
+          Signup
+        </Text> 
+        <Text fontSize="4xl" color="white" fontWeight="bold">
           What&apos;s your name?
         </Text>
         <Input
@@ -65,14 +65,13 @@ export default function FromPage() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Type your name..."
-          size={{ base: "xs", md: "lg" }}
+          size="lg"
           variant="outline"
           borderColor="white"
           color="#f24236"
           bg="white"
           p={4}
           mt={4}
-          fontSize={{ base: "md", md: "xl" }} 
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
@@ -89,8 +88,6 @@ export default function FromPage() {
           onClick={handleSubmit}
           disabled={loading}
           mt={4}
-          size={{ base: "xs", md: "lg" }} 
-          fontSize={{ base: "md", md: "xl" }} 
         >
           {loading ? <Spinner size="sm" /> : 'Submit'}
         </Button>

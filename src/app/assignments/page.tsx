@@ -61,8 +61,8 @@ function GifteeDisplay({ gifter }: { gifter: string }) {
       alignItems="center"
       p={4}
     >
-      <Stack align="center" width="100%">
-        <Text fontWeight="bold" color="white" fontSize="4xl">{message}</Text>
+      <Stack align="center" width="100%" textAlign="center">
+        <Text fontWeight="bold" color="white" fontSize={{ base: "2xl", md: "4xl" }}>{message}</Text>
         <HandwritingText text={giftee} />
       </Stack>
     </Box>
