@@ -1,5 +1,5 @@
 # Known Bugs
-- [ ] On safari the animation stars like 3 seconds in... need to figure out why this is the case.
+- [ ] On safari the animation starts like 3 seconds in... need to figure out why this is the case.
 
 # To Do
 - [ ] Santa's Page (displays a list of "cards" for each user
