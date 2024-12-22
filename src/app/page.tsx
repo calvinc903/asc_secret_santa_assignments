@@ -3,8 +3,12 @@
 import { Stack, Text } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button"
 import { useEffect } from "react";
+import { useSession } from "next-auth/react";
+
+
 
 export default function Home() {
+  const { data: session } = useSession();
   useEffect(() => {
     const myDate = new Date();
     const xmas = Date.parse(`Dec 25, ${myDate.getFullYear()}`);
@@ -61,6 +65,9 @@ export default function Home() {
           <Text fontWeight="bold" color="white" fontSize={{ base: "4xl", md: "7xl" }}>
             ASC Secret Santa
           </Text>
+            {/* <Text color="white" fontSize={{ base: "2xl", md: "4xl" }}>
+            {session?.user_id}
+            </Text> */}
           <Text fontWeight="normal" color="white" fontSize={{ base: "3xl", md: "6xl" }}>
             2024
           </Text>

@@ -2,14 +2,17 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
-import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
-export default function SignUpPage() {
-  const [name, setName] = useState('');
+export default function LoginPage() {
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   useEffect(() => {
     if (inputRef.current) {
@@ -17,49 +20,25 @@ export default function SignUpPage() {
     }
   }, []);
 
-  const postData = async (query: string) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/users`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.length == 1) {
-        router.push(`/`);
+      const res = await signIn('credentials', {
+        redirect: false,
+        password,
+        callbackUrl: '/', // Redirect to homepage after successful login
+      });
+      if (res?.error) {
+        setError('Invalid password');
       } else {
-        alert('Invalid name!');
+        router.push('/'); // Ensure navigation to the homepage
       }
     } catch (err) {
-      setError((err as Error).message);
+      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const checkIfUserExists = async (name: string) => {
-    try {
-    const response = await fetch(`/api/users`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.some((user: { name: string }) => user.name === name);
-    } catch (err) {
-    setError((err as Error).message);
-    return false;
-    }
-  };
-  
-
-  const handleSubmit = async () => {
-    if (name.trim()) {
-      if (await checkIfUserExists(name) == false) {
-        postData(name.toLowerCase());
-      } else {
-        alert('User already exists!');
-      }
     }
   };
 
@@ -72,18 +51,15 @@ export default function SignUpPage() {
       alignItems="center"
       p={4}
     >
-      <Stack alignItems="center">
+      <Stack alignItems="center" as="form" onSubmit={handleSubmit}>
         <Text fontSize="4xl" color="white" fontWeight="bold">
-          Signup
-        </Text> 
-        <Text fontSize="4xl" color="white" fontWeight="bold">
-          What&apos;s your name?
+          Log In
         </Text>
         <Input
           ref={inputRef}
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="Type your name..."
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Enter your password"
           size="lg"
           variant="outline"
           borderColor="white"
@@ -94,6 +70,8 @@ export default function SignUpPage() {
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
+          type="text" // Display input as plain text
+          required
         />
         <Button
           bg="white"
@@ -104,9 +82,9 @@ export default function SignUpPage() {
           borderRadius="md"
           _hover={{ bg: 'gray.100' }}
           width="200px"
-          onClick={handleSubmit}
           disabled={loading}
           mt={4}
+          type="submit"
         >
           {loading ? <Spinner size="sm" /> : 'Submit'}
         </Button>

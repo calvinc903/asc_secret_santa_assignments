@@ -3,19 +3,36 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
+import { useSession } from "next-auth/react";
 
 export default function FromPage() {
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { data: session } = useSession();
   const router = useRouter();
+
+
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-  }, []);
+
+    const fetchUserData = async () => {
+      const response = await fetch(`/api/users?_id=${session?.user_id}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      if (data.length == 1) {
+        setName(data[0].name);
+      }
+    };
+
+    fetchUserData().catch(console.error);
+  }, [session]);
 
   const fetchData = async (query: string) => {
     setLoading(true);

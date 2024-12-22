@@ -6,7 +6,7 @@ export async function GET(request) {
         const { searchParams } = new URL(request.url);
         const query = {};
         if (searchParams.has('name')) {
-            query.user = searchParams.get('user').toLowerCase();
+            query.name = searchParams.get('name').toLowerCase();
         }
         const data = await getUsersDB(query);
         return NextResponse.json(data);

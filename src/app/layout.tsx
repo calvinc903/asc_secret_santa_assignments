@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Provider } from "@/components/ui/provider"
-import CustomNavbar from "@/components/Navbar"
-
+import { Provider } from "@/components/ui/provider";
+import CustomNavbar from "@/components/Navbar";
+import { SessionProvider } from "next-auth/react";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,17 +21,16 @@ export const metadata: Metadata = {
   description: "Secret Santa 2024 for ASC",
 };
 
-export default function RootLayout(props: { children: React.ReactNode }) {
-  const { children } = props
+export default function RootLayout({ children, pageProps = {} }: { children: React.ReactNode, pageProps?: { session?: any } }) {
   return (
     <html lang="en" className='dark' suppressHydrationWarning>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Provider>
-          <CustomNavbar />
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <SessionProvider session={pageProps.session}>
+          <Provider>
+            <CustomNavbar />
             {children}
-        </Provider>
+          </Provider>
+        </SessionProvider>
       </body>
     </html>
   );
