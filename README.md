@@ -1,6 +1,6 @@
 # To Do
 - [ ] Allow upload videos on website
-- [ ] Santa's Page (displays a list of "cards" for each user
+- [ ] Santa's Page (displays a list of "cards" for each user)
 - [x] Create signup and login page
 - [x] Design accounts system probably need sessions
 - [x] Block submission unless data is found in MongoDB
