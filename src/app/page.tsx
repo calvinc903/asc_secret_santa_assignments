@@ -8,22 +8,33 @@ import { useSession } from "next-auth/react";
 
 
 export default function Home() {
-  const { data: session } = useSession();
   useEffect(() => {
-    const myDate = new Date();
-    const xmas = Date.parse(`Jan 4, ${myDate.getFullYear()}`);
-    const today = Date.parse(myDate.toString());
+    const daysUntilNextChristmas = (): number => {
+      const today = new Date();
+      const currentYear = today.getFullYear();
+      const nextChristmas = new Date(2025, 0, 4); // December 25th
+    
+      // If today is after December 25th, set next Christmas to December 25th of the next year
+      if (today > nextChristmas) {
+        nextChristmas.setFullYear(currentYear + 1);
+      }
+    
+      // Calculate the difference in milliseconds and convert to days
+      const msInDay = 24 * 60 * 60 * 1000;
+      return Math.ceil((nextChristmas.getTime() - today.getTime()) / msInDay);
+    };
 
-    const daysToChristmas = Math.round((xmas - today) / (1000 * 60 * 60 * 24));
+    let daysToChristmas = daysUntilNextChristmas();
+
 
     const daysElement = document.getElementById("days");
     if (daysElement) {
       if (daysToChristmas === 0) {
-        daysElement.textContent = "It's Christmas!! Merry Christmas!";
+        daysElement.textContent = "Have a Great Christmas Party!";
       } else if (daysToChristmas < 0) {
-        daysElement.textContent = `Christmas was ${-1 * daysToChristmas} days ago.`;
+        daysElement.textContent = `Christmas Party was ${-1 * daysToChristmas} days ago.`;
       } else {
-        daysElement.textContent = `${daysToChristmas} Days to Party!`;
+        daysElement.textContent = `${daysToChristmas} Days to Christmas Party!`;
       }
     }
 
