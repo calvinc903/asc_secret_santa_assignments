@@ -20,19 +20,18 @@ interface Session {
   user_id: string;
   name: string;
   expires: string;
-};
-
+}
 
 export const metadata: Metadata = {
   title: "ASC Secret Santa 2024",
   description: "Secret Santa 2024 for ASC",
 };
 
-export default function RootLayout({ children, pageProps = {} }: { children: React.ReactNode, pageProps?: { session?: Session } }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className='dark' suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <SessionProvider session={pageProps.session}>
+        <SessionProvider>
           <Provider>
             <CustomNavbar />
             {children}
