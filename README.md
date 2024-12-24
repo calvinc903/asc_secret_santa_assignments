@@ -13,6 +13,9 @@
 
 - [ ] Confetti effect when retrieving a person
 
+# LongTerm
+- [ ] Change assignments to use id instead of name. Will need to update all pages that reference Assignments API after this update. (Submit Video and get Giftee)
+
 
 
 
