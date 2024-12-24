@@ -1,6 +1,3 @@
-# Known Bugs
-- [ ] On safari the animation starts like 3 seconds in... need to figure out why this is the case.
-
 # To Do
 - [ ] Allow upload videos on website
 - [ ] Santa's Page (displays a list of "cards" for each user
@@ -8,6 +5,9 @@
 - [x] Design accounts system probably need sessions
 - [x] Block submission unless data is found in MongoDB
 - [x] Automatically lowercase names on submission
+
+# Known Bugs
+- [ ] On safari the animation starts like 3 seconds in... need to figure out why this is the case.
 
 # Extra Features
 
