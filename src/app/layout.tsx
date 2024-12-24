@@ -16,12 +16,19 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+interface Session {
+  user_id: string;
+  name: string;
+  expires: string;
+};
+
+
 export const metadata: Metadata = {
   title: "ASC Secret Santa 2024",
   description: "Secret Santa 2024 for ASC",
 };
 
-export default function RootLayout({ children, pageProps = {} }: { children: React.ReactNode, pageProps?: { session?: any } }) {
+export default function RootLayout({ children, pageProps = {} }: { children: React.ReactNode, pageProps?: { session?: Session } }) {
   return (
     <html lang="en" className='dark' suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
