@@ -19,19 +19,7 @@ export default function FromPage() {
     if (inputRef.current) {
       inputRef.current.focus();
     }
-
-    const fetchUserData = async () => {
-      const response = await fetch(`/api/users?_id=${session?.user_id}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.length == 1) {
-        setName(data[0].name);
-      }
-    };
-
-    fetchUserData().catch(console.error);
+    setName(session?.name || '');
   }, [session]);
 
   const fetchData = async (query: string) => {

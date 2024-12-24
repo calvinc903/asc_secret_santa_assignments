@@ -21,32 +21,32 @@ export default function CustomNavbar() {
   const currentPath = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { data: session } = useSession();
-  const [name, setName] = useState('');
+  // const [name, setName] = useState('');
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (session?.user_id) {
-        const response = await fetch(`/api/users?_id=${session.user_id}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.length === 1) {
-          const userName = data[0].name;
-          setName(userName.charAt(0).toUpperCase() + userName.slice(1));
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     if (session?.user_id) {
+  //       const response = await fetch(`/api/users?_id=${session.user_id}`);
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+  //       const data = await response.json();
+  //       if (data.length === 1) {
+  //         const userName = data[0].name;
+  //         setName(userName.charAt(0).toUpperCase() + userName.slice(1));
+  //       }
+  //     }
+  //   };
 
-    fetchUserData();
-  }, [session]);
+  //   fetchUserData();
+  // }, [session]);
 
   const menuItems = [
     { label: 'Home', href: '/' },
     { label: 'Reveal Your Giftee', href: '/from' },
-    { label: 'Santas', href: '/santas' },
+    { label: 'Gifts', href: '/gifts' },
     {
-      label: 'Gifts Spreadsheet',
+      label: 'Spreadsheet',
       href: 'https://docs.google.com/spreadsheets/d/1Nvjh48RAc9l-lNNdLw5dhgJpnLsdOGNO7uNFatB1NuA/edit?gid=1912476070#gid=1912476070',
     },
   ];
@@ -116,7 +116,7 @@ export default function CustomNavbar() {
           <NavbarItem>
             {session ? (
               <div style={{ color: '#fff', fontWeight: 'bold' }}>
-                {name}
+                Welcome {session?.name}!
               </div>
             ) : (
               <>
@@ -191,7 +191,7 @@ export default function CustomNavbar() {
             <hr style={{ borderTop: '1px solid white', width: '38%', marginTop: '20px' }} />
             {session ? (
             <div style={{ color: '#fff', fontWeight: 'bold', padding: '10px' }}>
-              {name}
+              Welcome {session?.name}!
             </div>
             ) : (
             <>
