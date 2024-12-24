@@ -32,9 +32,9 @@ export default function Home() {
       if (daysToChristmas === 0) {
         daysElement.textContent = "Have a Great Christmas Party!";
       } else if (daysToChristmas < 0) {
-        daysElement.textContent = `Christmas Party was ${-1 * daysToChristmas} days ago.`;
+        daysElement.textContent = `The Christmas Party was ${-1 * daysToChristmas} days ago.`;
       } else {
-        daysElement.textContent = `${daysToChristmas} Days to Christmas Party!`;
+        daysElement.textContent = `${daysToChristmas} Days to the Christmas Party!`;
       }
     }
 
