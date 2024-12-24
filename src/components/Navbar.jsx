@@ -44,6 +44,7 @@ export default function CustomNavbar() {
   const menuItems = [
     { label: 'Home', href: '/' },
     { label: 'Reveal Your Giftee', href: '/from' },
+    { label: 'Submit Video', href: '/submitvideo' },
     { label: 'Gifts', href: '/gifts' },
     {
       label: 'Spreadsheet',
