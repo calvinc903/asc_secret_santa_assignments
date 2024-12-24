@@ -123,8 +123,11 @@ const getGifteID = async (query: string) => {
           whiteSpace="pre-line" 
           textAlign="center"
         >
-          Ensure it is in this format &quot;https://www.youtube.com/watch?v=g_TaZmh154I&quot;. {'\n'} Specifically the &quot;v=...&quot; must be there.
+          Ensure it is in this format &quot;https://www.youtube.com/watch?v=dQw4w9WgXcQ&quot;
         </Text>
+        <Text fontSize={{ base: "sm", md: "md" }} color="white">
+          Ensure that the &quot;v=...&quot; part of the link is present
+        </Text> 
         <Input
           ref={inputRef}
           value={videoURL}

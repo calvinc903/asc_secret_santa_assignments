@@ -17,11 +17,17 @@ export default function SignUpPage() {
     }
   }, []);
 
-  const postData = async (query: string) => {
+  const postData = async (name: string) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/users`);
+      const response = await fetch(`/api/users`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: name }),
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -38,17 +44,20 @@ export default function SignUpPage() {
     }
   };
 
-  const checkIfUserExists = async (name: string) => {
+  const checkIfUserExists = async (query: string) => {
     try {
-    const response = await fetch(`/api/users`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data.some((user: { name: string }) => user.name === name);
+      const response = await fetch(`/api/users?name=${query.toLowerCase().trim()}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      if ((await response.json()).length == 1) {
+        return true;
+      } else {
+        return false;
+      }
     } catch (err) {
-    setError((err as Error).message);
-    return false;
+      setError((err as Error).message);
+      return false;
     }
   };
   
@@ -58,7 +67,7 @@ export default function SignUpPage() {
       if (await checkIfUserExists(name) == false) {
         postData(name.toLowerCase());
       } else {
-        alert('User already exists!');
+        alert('User already exists ☺️');
       }
     }
   };
@@ -73,11 +82,11 @@ export default function SignUpPage() {
       p={4}
     >
       <Stack alignItems="center">
-        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
+        {/* <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           Signup
-        </Text> 
+        </Text>  */}
         <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
-          What&apos;s your name?
+          Make an Account!
         </Text>
         <Input
           ref={inputRef}
@@ -112,7 +121,7 @@ export default function SignUpPage() {
           size={{ base: "xs", md: "lg" }} 
           fontSize={{ base: "md", md: "xl" }}
         >
-          {loading ? <Spinner size="sm" /> : 'Submit'}
+          {loading ? <Spinner size="sm" /> : 'Sign Up'}
         </Button>
         {error && (
           <Text color="yellow.300" fontSize="md">
