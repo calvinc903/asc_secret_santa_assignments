@@ -24,7 +24,7 @@ export default function Home() {
       return Math.ceil((nextChristmas.getTime() - today.getTime()) / msInDay);
     };
 
-    let daysToChristmas = daysUntilNextChristmas();
+    const daysToChristmas = daysUntilNextChristmas();
 
 
     const daysElement = document.getElementById("days");
