@@ -11,7 +11,7 @@ export default function Home() {
   const { data: session } = useSession();
   useEffect(() => {
     const myDate = new Date();
-    const xmas = Date.parse(`Dec 25, ${myDate.getFullYear()}`);
+    const xmas = Date.parse(`Jan 4, ${myDate.getFullYear()}`);
     const today = Date.parse(myDate.toString());
 
     const daysToChristmas = Math.round((xmas - today) / (1000 * 60 * 60 * 24));
@@ -23,7 +23,7 @@ export default function Home() {
       } else if (daysToChristmas < 0) {
         daysElement.textContent = `Christmas was ${-1 * daysToChristmas} days ago.`;
       } else {
-        daysElement.textContent = `${daysToChristmas} days to Christmas!`;
+        daysElement.textContent = `${daysToChristmas} Days to Party!`;
       }
     }
 

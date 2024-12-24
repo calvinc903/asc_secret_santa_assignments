@@ -5,7 +5,7 @@ import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-function LoginPage() {
+ function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -52,7 +52,7 @@ function LoginPage() {
       p={4}
     >
       <Stack alignItems="center" as="form" onSubmit={handleSubmit}>
-        <Text fontSize="4xl" color="white" fontWeight="bold">
+        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           Log In
         </Text>
         <Input
@@ -63,14 +63,16 @@ function LoginPage() {
           size="lg"
           variant="outline"
           borderColor="white"
+          width="335px"
           color="#f24236"
           bg="white"
           p={4}
           mt={4}
           _placeholder={{ color: '#f24236' }}
+          type="text" // Display input as plain text
+          fontSize={{ base: "md", md: "xl" }} 
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
-          type="text" // Display input as plain text
           required
         />
         <Button
@@ -85,6 +87,8 @@ function LoginPage() {
           disabled={loading}
           mt={4}
           type="submit"
+          size={{ base: "xs", md: "lg" }} 
+          fontSize={{ base: "md", md: "xl" }}
         >
           {loading ? <Spinner size="sm" /> : 'Submit'}
         </Button>

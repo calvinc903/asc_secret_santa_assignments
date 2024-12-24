@@ -73,10 +73,10 @@ export default function SignUpPage() {
       p={4}
     >
       <Stack alignItems="center">
-        <Text fontSize="4xl" color="white" fontWeight="bold">
+        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           Signup
         </Text> 
-        <Text fontSize="4xl" color="white" fontWeight="bold">
+        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           What&apos;s your name?
         </Text>
         <Input
@@ -89,8 +89,10 @@ export default function SignUpPage() {
           borderColor="white"
           color="#f24236"
           bg="white"
+          width="335px"
           p={4}
           mt={4}
+          fontSize={{ base: "md", md: "xl" }} 
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
@@ -107,6 +109,8 @@ export default function SignUpPage() {
           onClick={handleSubmit}
           disabled={loading}
           mt={4}
+          size={{ base: "xs", md: "lg" }} 
+          fontSize={{ base: "md", md: "xl" }}
         >
           {loading ? <Spinner size="sm" /> : 'Submit'}
         </Button>
