@@ -45,7 +45,7 @@ export default function CustomNavbar() {
     { label: 'Home', href: '/' },
     { label: 'Reveal Your Giftee', href: '/from' },
     { label: 'Submit Video', href: '/submitvideo' },
-    // { label: 'Gifts', href: '/gifts' },
+    { label: 'Gifts', href: '/gifts' },
     {
       label: 'Spreadsheet',
       href: 'https://docs.google.com/spreadsheets/d/1Nvjh48RAc9l-lNNdLw5dhgJpnLsdOGNO7uNFatB1NuA/edit?gid=1912476070#gid=1912476070',
