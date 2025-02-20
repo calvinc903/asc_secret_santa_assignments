@@ -12,7 +12,7 @@ export default function Home() {
     const daysUntilNextChristmas = (): number => {
       const today = new Date();
       const currentYear = today.getFullYear();
-      const nextChristmas = new Date(2025, 0, 4); // December 25th
+      const nextChristmas = new Date(currentYear, 11, 25); // December 25th
     
       // If today is after December 25th, set next Christmas to December 25th of the next year
       if (today > nextChristmas) {
