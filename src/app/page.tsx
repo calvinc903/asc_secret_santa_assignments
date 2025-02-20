@@ -80,7 +80,7 @@ export default function Home() {
             {session?.user_id}
             </Text> */}
           <Text fontWeight="normal" color="white" fontSize={{ base: "3xl", md: "6xl" }}>
-            2024
+            2025
           </Text>
           {/* <Text fontWeight="bold" color="white" fontSize="2xl">
             ________________________________________
