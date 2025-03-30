@@ -89,7 +89,7 @@ export default function GiftsPage() {
                   <Dialog.Positioner>
                     <Dialog.Content>
                       <Dialog.Header>
-                        <Dialog.Title>{user.name}'s Gift Video</Dialog.Title>
+                        <Dialog.Title>{user.name}&apos;s Gift Video</Dialog.Title>
                       </Dialog.Header>
                       <Dialog.Body>
                         {/* Use the VideoPlayer component to load the video */}

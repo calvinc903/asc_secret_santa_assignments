@@ -5,6 +5,7 @@ import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../firebase'; // Adjust the path as needed
+import { FirebaseError } from 'firebase/app';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -30,8 +31,13 @@ function LoginPage() {
       await signInWithEmailAndPassword(auth, email, password);
       // Redirect to callbackUrl after successful login
       router.push(callbackUrl);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      
     } finally {
       setLoading(false);
     }

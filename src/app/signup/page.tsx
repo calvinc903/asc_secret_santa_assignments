@@ -5,6 +5,7 @@ import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../../firebase'; // Ensure your firebase.js exports an initialized auth instance
+import { FirebaseError } from 'firebase/app';
 
 export default function SignUpPage() {
   const [name, setName] = useState('');
@@ -38,9 +39,12 @@ export default function SignUpPage() {
       
       // Redirect or perform further actions as needed
       router.push(`/`);
-    } catch (err: any) {
-      // Handle errors (e.g., email already in use)
-      setError(err.message);
+    } catch (err) {
+        if (err instanceof FirebaseError) {
+          setError(err.message);
+        } else {
+          setError('An unexpected error occurred. Please try again.');
+        }
     } finally {
       setLoading(false);
     }
