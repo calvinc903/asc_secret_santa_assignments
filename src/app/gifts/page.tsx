@@ -70,7 +70,6 @@ export default function GiftsPage() {
               <Dialog.Root key={user._id} size="lg">
                 <Dialog.Trigger asChild>
                 <Card.Root
-                  key={user._id}
                   bg="white"
                   color="#f24236"
                   borderRadius="md" 
