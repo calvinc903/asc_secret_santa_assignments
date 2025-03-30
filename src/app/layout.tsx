@@ -23,8 +23,8 @@ interface Session {
 }
 
 export const metadata: Metadata = {
-  title: "ASC Secret Santa 2024",
-  description: "Secret Santa 2024 for ASC",
+  title: "ASC Secret Santa",
+  description: "Secret Santa for ASC",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

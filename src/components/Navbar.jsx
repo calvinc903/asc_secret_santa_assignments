@@ -15,31 +15,29 @@ import {
 } from '@nextui-org/react';
 import Image from 'next/image';
 import SantaHatImage from '../../public/Santa Red Hat Icon.png';
-import { signIn, useSession } from "next-auth/react";
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { auth } from '../firebase'; // Ensure this exports an initialized auth instance
 
 export default function CustomNavbar() {
   const currentPath = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { data: session } = useSession();
-  // const [name, setName] = useState('');
+  const [user, setUser] = useState(null);
 
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     if (session?.user_id) {
-  //       const response = await fetch(`/api/users?_id=${session.user_id}`);
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-  //       const data = await response.json();
-  //       if (data.length === 1) {
-  //         const userName = data[0].name;
-  //         setName(userName.charAt(0).toUpperCase() + userName.slice(1));
-  //       }
-  //     }
-  //   };
+  // Listen for Firebase auth state changes
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
-  //   fetchUserData();
-  // }, [session]);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
 
   const menuItems = [
     { label: 'Home', href: '/' },
@@ -102,6 +100,8 @@ export default function CustomNavbar() {
                   style={{
                     color: '#fff',
                     fontWeight: isActive ? 'bold' : 'normal',
+                    borderBottom: isActive ? '2px solid #fff' : 'none',
+                    paddingBottom: '4px', // adjust spacing if needed
                   }}
                   href={item.href}
                 >
@@ -112,12 +112,21 @@ export default function CustomNavbar() {
           })}
         </NavbarContent>
 
-        {/* Buttons for Sign Up and Login or User's Name */}
+        {/* Buttons for Sign Up/Login or User's Name with Logout */}
         <NavbarContent className="hidden xxl:flex gap-8" justify="end">
           <NavbarItem>
-            {session ? (
-              <div style={{ color: '#fff', fontWeight: 'bold' }}>
-                Welcome {session?.name}!
+            {user ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ color: '#fff', fontWeight: 'bold' }}>
+                  Welcome {user.displayName || 'User'}!
+                </div>
+                <Button
+                  onClick={handleLogout}
+                  style={{ backgroundColor: '#fff', color: '#f24236' }}
+                  variant="solid"
+                >
+                  Logout
+                </Button>
               </div>
             ) : (
               <>
@@ -131,11 +140,9 @@ export default function CustomNavbar() {
                 </Button>
                 <Button
                   as={Link}
-                  color="white"
                   style={{ color: '#fff', marginLeft: '10px' }}
                   href="/login"
                   variant="bordered"
-                  onClick={() => signIn()}
                 >
                   Login
                 </Button>
@@ -160,7 +167,7 @@ export default function CustomNavbar() {
           zIndex: 1000,
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'space-between', // Space between menu items and buttons
+          justifyContent: 'space-between',
           paddingLeft: '20px',
         }}
       >
@@ -188,36 +195,50 @@ export default function CustomNavbar() {
                 </Link>
               </NavbarMenuItem>
             );
-            })}
-            <hr style={{ borderTop: '1px solid white', width: '38%', marginTop: '20px' }} />
-            {session ? (
-            <div style={{ color: '#fff', fontWeight: 'bold', padding: '10px' }}>
-              Welcome {session?.name}!
+          })}
+          <hr
+            style={{
+              borderTop: '1px solid white',
+              width: '38%',
+              marginTop: '20px',
+            }}
+          />
+          {user ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
+              <div style={{ color: '#fff', fontWeight: 'bold' }}>
+                Welcome {user.displayName || 'User'}!
+              </div>
+              <Button
+                onClick={handleLogout}
+                style={{ backgroundColor: '#fff', color: '#f24236', maxWidth: '100px' }}
+                variant="solid"
+              >
+                Logout
+              </Button>
             </div>
-            ) : (
+          ) : (
             <>
               <Button
-              as={Link}
-              style={{
-                backgroundColor: '#fff',
-                color: '#f24236',
-                width: '100%',
-                maxWidth: '100px', 
-                marginTop: '20px', 
-                marginRight: '10px',
-              }}
-              href="/sign-up"
-              variant="solid"
+                as={Link}
+                style={{
+                  backgroundColor: '#fff',
+                  color: '#f24236',
+                  width: '100%',
+                  maxWidth: '100px',
+                  marginTop: '20px',
+                  marginRight: '10px',
+                }}
+                href="/signup"
+                variant="solid"
               >
-              Sign Up
+                Sign Up
               </Button>
               <Button
-              as={Link}
-              color="white"
-              style={{
-                color: '#fff',
-                width: '100%',
-                maxWidth: '100px', // Restrict the width
+                as={Link}
+                style={{
+                  color: '#fff',
+                  width: '100%',
+                  maxWidth: '100px',
                 }}
                 href="/login"
                 variant="bordered"

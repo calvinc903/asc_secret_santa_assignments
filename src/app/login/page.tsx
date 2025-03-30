@@ -2,22 +2,23 @@
 
 import { useState, useRef, useEffect, Suspense } from 'react';
 import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
-import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebase'; // Adjust the path as needed
 
- function LoginPage() {
+function LoginPage() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+
+  const emailRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    emailRef.current?.focus();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,18 +26,12 @@ import { useRouter, useSearchParams } from 'next/navigation';
     setLoading(true);
     setError(null);
     try {
-      const res = await signIn('credentials', {
-        redirect: false,
-        password,
-        callbackUrl: '/', // Redirect to homepage after successful login
-      });
-      if (res?.error) {
-        setError('Invalid password');
-      } else {
-        router.push('/'); // Ensure navigation to the homepage
-      }
-    } catch (err) {
-      setError('An unexpected error occurred');
+      // Sign in with Firebase Authentication using email and password
+      await signInWithEmailAndPassword(auth, email, password);
+      // Redirect to callbackUrl after successful login
+      router.push(callbackUrl);
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -56,7 +51,26 @@ import { useRouter, useSearchParams } from 'next/navigation';
           Log In
         </Text>
         <Input
-          ref={inputRef}
+          ref={emailRef}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+          size="lg"
+          variant="outline"
+          borderColor="white"
+          width="335px"
+          color="#f24236"
+          bg="white"
+          p={4}
+          mt={4}
+          _placeholder={{ color: '#f24236' }}
+          type="email"
+          fontSize={{ base: "md", md: "xl" }}
+          _hover={{ borderColor: 'white' }}
+          _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
+          required
+        />
+        <Input
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Enter your password"
@@ -69,8 +83,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
           p={4}
           mt={4}
           _placeholder={{ color: '#f24236' }}
-          type="text" // Display input as plain text
-          fontSize={{ base: "md", md: "xl" }} 
+          type="password"
+          fontSize={{ base: "md", md: "xl" }}
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
           required
@@ -87,7 +101,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
           disabled={loading}
           mt={4}
           type="submit"
-          size={{ base: "xs", md: "lg" }} 
+          size={{ base: "xs", md: "lg" }}
           fontSize={{ base: "md", md: "xl" }}
         >
           {loading ? <Spinner size="sm" /> : 'Submit'}

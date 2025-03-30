@@ -3,72 +3,46 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { auth } from '../../firebase'; // Ensure your firebase.js exports an initialized auth instance
 
 export default function SignUpPage() {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    inputRef.current?.focus();
   }, []);
 
-  const postData = async (name: string) => {
+  const handleSubmit = async () => {
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setError('All fields are required.');
+      return;
+    }
+    
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/users`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name: name }),
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      if (data.length == 1) {
-        router.push(`/`);
-      } else {
-        alert('Invalid name!');
-      }
-    } catch (err) {
-      setError((err as Error).message);
+      // Create the user with email and password using async/await
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Update the user's profile with the display name
+      await updateProfile(user, { displayName: name });
+      
+      // Redirect or perform further actions as needed
+      router.push(`/`);
+    } catch (err: any) {
+      // Handle errors (e.g., email already in use)
+      setError(err.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const checkIfUserExists = async (query: string) => {
-    try {
-      const response = await fetch(`/api/users?name=${query.toLowerCase().trim()}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      if ((await response.json()).length == 1) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (err) {
-      setError((err as Error).message);
-      return false;
-    }
-  };
-  
-
-  const handleSubmit = async () => {
-    if (name.trim()) {
-      if (await checkIfUserExists(name) == false) {
-        postData(name.toLowerCase());
-      } else {
-        alert('User already exists ☺️');
-      }
     }
   };
 
@@ -82,9 +56,6 @@ export default function SignUpPage() {
       p={4}
     >
       <Stack alignItems="center">
-        {/* <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
-          Signup
-        </Text>  */}
         <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           Make an Account!
         </Text>
@@ -101,7 +72,42 @@ export default function SignUpPage() {
           width="335px"
           p={4}
           mt={4}
-          fontSize={{ base: "md", md: "xl" }} 
+          fontSize={{ base: "md", md: "xl" }}
+          _placeholder={{ color: '#f24236' }}
+          _hover={{ borderColor: 'white' }}
+          _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
+        />
+        <Input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Type your email..."
+          size="lg"
+          variant="outline"
+          borderColor="white"
+          color="#f24236"
+          bg="white"
+          width="335px"
+          p={4}
+          mt={4}
+          fontSize={{ base: "md", md: "xl" }}
+          _placeholder={{ color: '#f24236' }}
+          _hover={{ borderColor: 'white' }}
+          _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
+        />
+        <Input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Type your password..."
+          size="lg"
+          variant="outline"
+          borderColor="white"
+          color="#f24236"
+          bg="white"
+          width="335px"
+          p={4}
+          mt={4}
+          fontSize={{ base: "md", md: "xl" }}
+          type="password"
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}
           _focus={{ borderColor: 'white', boxShadow: 'none', outline: 'none' }}
@@ -118,7 +124,7 @@ export default function SignUpPage() {
           onClick={handleSubmit}
           disabled={loading}
           mt={4}
-          size={{ base: "xs", md: "lg" }} 
+          size={{ base: "xs", md: "lg" }}
           fontSize={{ base: "md", md: "xl" }}
         >
           {loading ? <Spinner size="sm" /> : 'Sign Up'}
