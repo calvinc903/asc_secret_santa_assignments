@@ -1,4 +1,4 @@
-import { getUsersDB, postUsersDB } from '../../../lib/userDB';
+import { getUsersDB, postUsersDB, postUsersBatchDB } from '../../../lib/userDB';
 import { NextResponse } from 'next/server';
 
 export async function GET(request) {
@@ -17,11 +17,24 @@ export async function GET(request) {
 
 export async function POST(request) {
     try {
-        const { name } = await request.json();
-        const result = await postUsersDB(name.toLowerCase());
-        return NextResponse.json(result, { status: 201 });
+        const body = await request.json();
+        
+        // Check if it's a batch request (array) or single user request
+        if (Array.isArray(body)) {
+            // Batch posting
+            const names = body.map(item => 
+                typeof item === 'string' ? item.toLowerCase() : item.name.toLowerCase()
+            );
+            const result = await postUsersBatchDB(names);
+            return NextResponse.json(result, { status: 201 });
+        } else {
+            // Single user posting
+            const { name } = body;
+            const result = await postUsersDB(name.toLowerCase());
+            return NextResponse.json(result, { status: 201 });
+        }
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to post user' }, { status: 500 });
+        return NextResponse.json({ error: 'Failed to post user(s)', details: error.message }, { status: 500 });
     }
 }
 
