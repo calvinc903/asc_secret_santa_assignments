@@ -60,7 +60,7 @@ export default function FromPage() {
     >
       <Stack alignItems="center">
         <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
-          Step into the holiday spirit!
+          Reveal your Secret Santa Assignment!
         </Text>
         <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           What&apos;s your name?
@@ -77,6 +77,7 @@ export default function FromPage() {
           bg="white"
           p={4}
           mt={4}
+          width="400px"
           fontSize={{ base: "md", md: "xl" }} 
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}
