@@ -79,10 +79,25 @@ export default function CustomNavbar() {
         </NavbarBrand>
 
         {/* Menu Toggle for Mobile */}
-        <div className="xxl:hidden">
+        <div 
+          className="xxl:hidden" 
+          style={{ 
+            position: 'relative', 
+            zIndex: 1001,
+            minWidth: '44px',
+            minHeight: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
           <NavbarMenuToggle
             aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
             className="h-10 w-10 flex items-center justify-center"
+            style={{
+              touchAction: 'manipulation',
+              WebkitTapHighlightColor: 'transparent'
+            }}
           />
         </div>
 
@@ -160,6 +175,7 @@ export default function CustomNavbar() {
                   }}
                   href={item.href}
                   target={item.label === 'Spreadsheet' ? '_blank' : undefined}
+                  onClick={() => setIsMenuOpen(false)}
                 >
                   {item.label}
                 </Link>

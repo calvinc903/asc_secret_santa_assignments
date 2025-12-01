@@ -127,6 +127,7 @@ export default function Home() {
           top: 0;
           z-index: 1;
           opacity: 1;
+          pointer-events: none;
         }
 
         .snow {
