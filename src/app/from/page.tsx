@@ -59,10 +59,10 @@ export default function FromPage() {
       p={4}
     >
       <Stack alignItems="center">
-        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
+        <Text fontSize={{ base: "lg", md: "4xl" }} color="white" fontWeight="bold" textAlign="center" px={4}>
           Reveal your Secret Santa Assignment!
         </Text>
-        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
+        <Text fontSize={{ base: "lg", md: "4xl" }} color="white" fontWeight="bold" textAlign="center" px={4}>
           What&apos;s your name?
         </Text>
         <Input
@@ -77,7 +77,8 @@ export default function FromPage() {
           bg="white"
           p={4}
           mt={4}
-          width="400px"
+          width={{ base: "90%", md: "400px" }}
+          maxWidth="400px"
           fontSize={{ base: "md", md: "xl" }} 
           _placeholder={{ color: '#f24236' }}
           _hover={{ borderColor: 'white' }}

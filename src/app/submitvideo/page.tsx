@@ -113,19 +113,20 @@ const getGifteID = async (query: string) => {
       p={4}
     >
       <Stack alignItems="center">
-        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
+        <Text fontSize={{ base: "lg", md: "4xl" }} color="white" fontWeight="bold" textAlign="center" px={4}>
           Submit your Youtube Video
         </Text> 
         <Text 
-          fontSize={{ base: "lg", md: "1xl" }} 
+          fontSize={{ base: "sm", md: "1xl" }} 
           color="white" 
           fontWeight="bold" 
           whiteSpace="pre-line" 
           textAlign="center"
+          px={4}
         >
           Ensure it is in this format &quot;https://www.youtube.com/watch?v=dQw4w9WgXcQ&quot;
         </Text>
-        <Text fontSize={{ base: "sm", md: "md" }} color="white">
+        <Text fontSize={{ base: "xs", md: "md" }} color="white" textAlign="center" px={4}>
           Ensure that the &quot;v=...&quot; part of the link is present
         </Text> 
         <Input
@@ -138,7 +139,8 @@ const getGifteID = async (query: string) => {
           borderColor="white"
           color="#f24236"
           bg="white"
-          width="335px"
+          width={{ base: "90%", md: "400px" }}
+          maxWidth="400px"
           p={4}
           mt={4}
           fontSize={{ base: "md", md: "xl" }} 
