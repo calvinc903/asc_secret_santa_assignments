@@ -4,6 +4,11 @@ import Vara from 'vara';
 
 const HandwritingText = ({ text }) => {
   useEffect(() => {
+    const container = document.getElementById('vara-container');
+    if (container) {
+      container.innerHTML = '';
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const vara = new Vara(
       '#vara-container',
@@ -20,11 +25,13 @@ const HandwritingText = ({ text }) => {
     );
 
     return () => {
-      // Cleanup Vara instance if necessary
+      if (container) {
+        container.innerHTML = '';
+      }
     };
   }, [text]);
 
-  return <div id="vara-container"></div>;
+  return <div id="vara-container" style={{ minHeight: '80px', width: '100%' }}></div>;
 };
 
 export default HandwritingText;
