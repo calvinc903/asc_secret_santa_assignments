@@ -43,7 +43,7 @@ export default function CustomNavbar() {
     { label: 'Home', href: '/' },
     { label: 'Reveal Your Giftee', href: '/from' },
     { label: 'Submit Video', href: '/submitvideo' },
-    { label: 'Gifts', href: '/gifts' },
+    { label: 'Videos', href: '/gifts' },
     {
       label: 'Spreadsheet',
       href: 'https://docs.google.com/spreadsheets/d/1Nvjh48RAc9l-lNNdLw5dhgJpnLsdOGNO7uNFatB1NuA/edit?gid=1912476070#gid=1912476070',
@@ -104,6 +104,7 @@ export default function CustomNavbar() {
                     paddingBottom: '4px', // adjust spacing if needed
                   }}
                   href={item.href}
+                  target={item.label === 'Spreadsheet' ? '_blank' : undefined}
                 >
                   {item.label}
                 </Link>
@@ -115,39 +116,7 @@ export default function CustomNavbar() {
         {/* Buttons for Sign Up/Login or User's Name with Logout */}
         <NavbarContent className="hidden xxl:flex gap-8" justify="end">
           <NavbarItem>
-            {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div style={{ color: '#fff', fontWeight: 'bold' }}>
-                  Welcome {user.displayName || 'User'}!
-                </div>
-                <Button
-                  onClick={handleLogout}
-                  style={{ backgroundColor: '#fff', color: '#f24236' }}
-                  variant="solid"
-                >
-                  Logout
-                </Button>
-              </div>
-            ) : (
-              <>
-                <Button
-                  as={Link}
-                  style={{ backgroundColor: '#fff', color: '#f24236' }}
-                  href="/signup"
-                  variant="solid"
-                >
-                  Sign Up
-                </Button>
-                <Button
-                  as={Link}
-                  style={{ color: '#fff', marginLeft: '10px' }}
-                  href="/login"
-                  variant="bordered"
-                >
-                  Login
-                </Button>
-              </>
-            )}
+            {/* Hidden */}
           </NavbarItem>
         </NavbarContent>
       </div>
@@ -190,6 +159,7 @@ export default function CustomNavbar() {
                     textDecoration: 'none',
                   }}
                   href={item.href}
+                  target={item.label === 'Spreadsheet' ? '_blank' : undefined}
                 >
                   {item.label}
                 </Link>
@@ -203,50 +173,7 @@ export default function CustomNavbar() {
               marginTop: '20px',
             }}
           />
-          {user ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px' }}>
-              <div style={{ color: '#fff', fontWeight: 'bold' }}>
-                Welcome {user.displayName || 'User'}!
-              </div>
-              <Button
-                onClick={handleLogout}
-                style={{ backgroundColor: '#fff', color: '#f24236', maxWidth: '100px' }}
-                variant="solid"
-              >
-                Logout
-              </Button>
-            </div>
-          ) : (
-            <>
-              <Button
-                as={Link}
-                style={{
-                  backgroundColor: '#fff',
-                  color: '#f24236',
-                  width: '100%',
-                  maxWidth: '100px',
-                  marginTop: '20px',
-                  marginRight: '10px',
-                }}
-                href="/signup"
-                variant="solid"
-              >
-                Sign Up
-              </Button>
-              <Button
-                as={Link}
-                style={{
-                  color: '#fff',
-                  width: '100%',
-                  maxWidth: '100px',
-                }}
-                href="/login"
-                variant="bordered"
-              >
-                Login
-              </Button>
-            </>
-          )}
+          {/* Hidden */}
         </div>
       </NavbarMenu>
     </Navbar>
