@@ -4,6 +4,7 @@ import "./globals.css";
 import { Provider } from "@/components/ui/provider";
 import CustomNavbar from "@/components/Navbar";
 import { SessionProvider } from "next-auth/react";
+import { UserProvider } from "@/contexts/UserContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,8 +34,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <SessionProvider>
           <Provider>
-            <CustomNavbar />
-            {children}
+            <UserProvider>
+              <CustomNavbar />
+              {children}
+            </UserProvider>
           </Provider>
         </SessionProvider>
       </body>
