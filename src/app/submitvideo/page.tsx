@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Button, Stack, Text, Input, Spinner, VStack } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-import { signIn, useSession } from "next-auth/react";
 import { useUsers } from '@/contexts/UserContext';
 
 
@@ -18,7 +17,6 @@ export default function SignUpPage() {
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { data: session } = useSession();
   const router = useRouter();
 
   useEffect(() => {
