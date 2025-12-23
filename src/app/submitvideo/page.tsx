@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Box, Button, Stack, Text, Input, Spinner, VStack } from '@chakra-ui/react';
+import { Box, Stack, Text, Input, VStack, Button, Spinner, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { useUsers } from '@/contexts/UserContext';
 
@@ -250,16 +250,10 @@ const postData = async (fileName: string) => {
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        alert('Video submitted ☺️');
-        // Reset form
-        setSelectedFile(null);
-        setVideoPreviewUrl('');
-        setUploadProgress(0);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
-        }
+        // Don't reset form here - let the success page handle it
     } catch (err) {
         setError((err as Error).message);
+        throw err; // Re-throw to be caught by handleSubmit
     }
 };
 
@@ -306,6 +300,9 @@ const getGifteID = async (query: string) => {
       // Save to database
       await postData(fileName);
       console.log('Video submission complete!');
+      
+      // Navigate to success page
+      router.push(`/video-success?fileName=${encodeURIComponent(fileName)}`);
     } catch (err) {
       console.error('Submission error:', err);
       setError((err as Error).message);
@@ -517,10 +514,25 @@ const getGifteID = async (query: string) => {
           fontSize={{ base: "md", md: "xl" }}
         >
           {loading ? (
-            <Stack direction="row" align="center" gap={2}>
-              <Spinner size="sm" />
+            <Flex align="center" gap={2}>
+              <Box
+                as="span"
+                display="inline-block"
+                width="16px"
+                height="16px"
+                border="3px solid"
+                borderColor="#f24236"
+                borderTopColor="transparent"
+                borderRadius="50%"
+                animation="spin 0.8s linear infinite"
+              />
               <Text>Uploading...</Text>
-            </Stack>
+              <style jsx>{`
+                @keyframes spin {
+                  to { transform: rotate(360deg); }
+                }
+              `}</style>
+            </Flex>
           ) : (
             'Submit Video'
           )}
