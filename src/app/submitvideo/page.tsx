@@ -203,6 +203,7 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   const uploadToR2 = async (file: File): Promise<string> => {
     const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB chunks
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    const startTime = Date.now();
     
     let uploadId: string | null = null;
     let objectKey: string | null = null;
@@ -287,8 +288,11 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
         throw new Error('Failed to complete upload');
       }
 
-      console.log('Upload completed successfully');
-      return objectKey;
+      const duration = Date.now() - startTime;
+      const durationSeconds = (duration / 1000).toFixed(2);
+      const durationMinutes = (duration / 60000).toFixed(2);
+      console.log(`Upload completed successfully in ${durationSeconds}s (${durationMinutes} minutes)`);
+      return { objectKey, durationSeconds };
 
     } catch (err) {
       console.error('Error uploading to R2:', err);
@@ -384,13 +388,13 @@ const getGifteID = async (query: string) => {
       }
       
       // Upload to R2
-      const objectKey = await uploadToR2(selectedFile);
+      const { objectKey, durationSeconds } = await uploadToR2(selectedFile);
       
       // Save to database
       await postData(objectKey);
       
       // Navigate to success page
-      router.push(`/video-success?fileName=${encodeURIComponent(objectKey)}`);
+      router.push(`/video-success?fileName=${encodeURIComponent(objectKey)}&duration=${durationSeconds}`);
     } catch (err) {
       console.error('Error during video submission:', err);
       setError((err as Error).message);

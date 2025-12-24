@@ -10,6 +10,7 @@ function VideoSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const objectKey = searchParams.get('fileName'); // This is now the objectKey
+  const duration = searchParams.get('duration');
   const { width, height } = useWindowSize();
   const [numberOfPieces, setNumberOfPieces] = useState(500);
   const [videoUrl, setVideoUrl] = useState('');
@@ -96,6 +97,26 @@ function VideoSuccessContent() {
         >
           🎄 Video Submitted Successfully! 🎅
         </Text>
+
+        {duration && (
+          <Text 
+            fontSize={{ base: "sm", md: "lg" }} 
+            color="white" 
+            textAlign="center"
+            fontWeight="semibold"
+          >
+            Upload completed in: {(() => {
+              const totalSeconds = parseFloat(duration);
+              const minutes = Math.floor(totalSeconds / 60);
+              const seconds = Math.floor(totalSeconds % 60);
+              if (minutes > 0) {
+                return `${minutes} minute${minutes !== 1 ? 's' : ''} ${seconds} second${seconds !== 1 ? 's' : ''}`;
+              } else {
+                return `${seconds} second${seconds !== 1 ? 's' : ''}`;
+              }
+            })()}
+          </Text>
+        )}
 
         <Text 
           fontSize={{ base: "md", md: "xl" }} 
