@@ -46,7 +46,7 @@ export default function CustomNavbar() {
     { label: 'Videos', href: '/gifts' },
     {
       label: 'Spreadsheet',
-      href: 'https://docs.google.com/spreadsheets/d/1Nvjh48RAc9l-lNNdLw5dhgJpnLsdOGNO7uNFatB1NuA/edit?gid=1912476070#gid=1912476070',
+      href: 'https://docs.google.com/spreadsheets/d/13qDgupji-Bod1UbMZkUGbbL_saxBg8TBWZr7W_QZDbk/edit?gid=1912476070#gid=1912476070',
     },
   ];
 
