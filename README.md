@@ -18,5 +18,4 @@
 - [ ] embed spreadsheet into website or even just replace the spreadsheet as a whole
 
 
-# Deploy worker
-npx wrangler deploy 'video-worker'
+

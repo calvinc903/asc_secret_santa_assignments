@@ -1,5 +1,16 @@
 import { getYoutubeVideosDB, postYoutubeVideoDB } from '../../../lib/youtubevideosDB';
 import { NextResponse } from 'next/server';
+import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+
+// Initialize S3 client for R2
+const s3Client = new S3Client({
+  region: 'auto',
+  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  credentials: {
+    accessKeyId: process.env.R2_ACCESS_KEY_ID,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
+  },
+});
 
 export async function GET(request) {
     try {
@@ -19,31 +30,20 @@ export async function POST(request) {
     try {
         const { user_id, videoURL } = await request.json();
         
-        // Check if it's a YouTube URL or a Cloudflare filename
-        let videoIdentifier;
-        if (videoURL.includes('youtube.com') || videoURL.includes('youtu.be')) {
-            // It's a YouTube URL, extract the video ID
-            videoIdentifier = extractVideoId(videoURL);
-        } else {
-            // It's a Cloudflare filename, use it directly
-            videoIdentifier = videoURL;
-        }
+        // videoURL is now the objectKey (e.g., "user/John/1234567890-video.mp4")
+        const result = await postYoutubeVideoDB(user_id, videoURL);
+        console.log('Saved video for user:', user_id, 'objectKey:', videoURL);
         
-        const result = await postYoutubeVideoDB(user_id, videoIdentifier);
-        console.log(user_id, videoIdentifier);
-        
-        // If there was an old video and it's a Cloudflare file (not YouTube), delete it from R2
-        if (result.oldVideoURL && !result.oldVideoURL.includes('youtube') && result.oldVideoURL !== videoIdentifier) {
+        // If there was an old video, delete it from R2
+        if (result.oldVideoURL && result.oldVideoURL !== videoURL) {
             try {
-                console.log('Deleting old video from Cloudflare:', result.oldVideoURL);
-                const deleteResponse = await fetch(`https://video-worker.ascsecretsanta.workers.dev/delete/${result.oldVideoURL}`, {
-                    method: 'DELETE'
+                console.log('Deleting old video from R2:', result.oldVideoURL);
+                const deleteCommand = new DeleteObjectCommand({
+                    Bucket: 'videos',
+                    Key: result.oldVideoURL,
                 });
-                if (deleteResponse.ok) {
-                    console.log('Old video deleted successfully');
-                } else {
-                    console.error('Failed to delete old video:', await deleteResponse.text());
-                }
+                await s3Client.send(deleteCommand);
+                console.log('Old video deleted successfully');
             } catch (deleteError) {
                 console.error('Error deleting old video:', deleteError);
                 // Don't fail the whole request if deletion fails

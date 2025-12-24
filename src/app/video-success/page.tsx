@@ -6,14 +6,14 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@/hooks/useWindowSize';
 
-const CLOUDFLARE_WORKER_URL = 'https://video-worker.ascsecretsanta.workers.dev';
-
 export default function VideoSuccessPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const fileName = searchParams.get('fileName');
+  const objectKey = searchParams.get('fileName'); // This is now the objectKey
   const { width, height } = useWindowSize();
   const [numberOfPieces, setNumberOfPieces] = useState(500);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [loading, setLoading] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -25,7 +25,39 @@ export default function VideoSuccessPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  if (!fileName) {
+  useEffect(() => {
+    const getVideoUrl = async () => {
+      if (!objectKey) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/video-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ objectKey }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to get video URL');
+        }
+
+        const { viewUrl } = await response.json();
+        setVideoUrl(viewUrl);
+      } catch (error) {
+        console.error('Error getting video URL:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getVideoUrl();
+  }, [objectKey]);
+
+  if (!objectKey) {
     return (
       <Box bg="#f24236" minHeight="100vh" display="flex" alignItems="center" justifyContent="center" p={4}>
         <Text color="white" fontSize="2xl">No video found</Text>
@@ -74,38 +106,61 @@ export default function VideoSuccessPage() {
         </Text>
 
         {/* Video Preview */}
-        <Box
-          width="100%"
-          maxWidth="800px"
-          borderRadius="lg"
-          overflow="hidden"
-          boxShadow="2xl"
-          bg="black"
-        >
-          <video
-            ref={videoRef}
-            controls
-            style={{ width: '100%', maxHeight: '500px' }}
-            preload="metadata"
+        {loading ? (
+          <Text color="white">Loading video...</Text>
+        ) : videoUrl ? (
+          <Box
+            width="100%"
+            maxWidth="800px"
+            borderRadius="lg"
+            overflow="hidden"
+            boxShadow="2xl"
+            bg="black"
           >
-            <source src={`${CLOUDFLARE_WORKER_URL}/${fileName}`} type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        </Box>
+            <video
+              ref={videoRef}
+              controls
+              style={{ width: '100%', maxHeight: '500px' }}
+              preload="metadata"
+            >
+              <source src={videoUrl} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </Box>
+        ) : (
+          <Text color="white">Failed to load video</Text>
+        )}
 
         {/* Back Button */}
-        <Button
-          bg="white"
-          color="#f24236"
-          fontWeight="bold"
-          py={6}
-          px={8}
-          borderRadius="md"
-          fontSize={{ base: "lg", md: "xl" }}
-          onClick={() => router.push('/')}
-        >
-          ← Back to Home
-        </Button>
+        <VStack gap={3}>
+          <Button
+            bg="white"
+            color="#f24236"
+            fontWeight="bold"
+            py={6}
+            px={8}
+            borderRadius="md"
+            fontSize={{ base: "lg", md: "xl" }}
+            onClick={() => router.push('/submitvideo')}
+            width="250px"
+          >
+            Resubmit Video
+          </Button>
+          
+          <Button
+            bg="white"
+            color="#f24236"
+            fontWeight="bold"
+            py={6}
+            px={8}
+            borderRadius="md"
+            fontSize={{ base: "lg", md: "xl" }}
+            onClick={() => router.push('/')}
+            width="250px"
+          >
+            ← Back to Home
+          </Button>
+        </VStack>
       </VStack>
     </Box>
   );

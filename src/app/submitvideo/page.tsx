@@ -22,8 +22,7 @@ export default function SignUpPage() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  const CLOUDFLARE_WORKER_URL = 'https://video-worker.ascsecretsanta.workers.dev';
-  const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
+  const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB max
   const MAX_DURATION = 10 * 60; // 10 minutes in seconds
 
   useEffect(() => {
@@ -45,6 +44,8 @@ export default function SignUpPage() {
       }
     };
   }, [videoPreviewUrl]);
+
+
 
   const filteredUsers = users.filter(user => 
     user.toLowerCase().startsWith(searchInput.toLowerCase())
@@ -99,9 +100,10 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
       return;
     }
 
-    // Validate file size
-    if (file.size > MAX_FILE_SIZE) {
-      setError(`File too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB`);
+    // Don't check file size here - let the API validate it
+    // Just warn if very large
+    if (file.size > 500 * 1024 * 1024) {
+      setError('File is too large (over 500MB). Please choose a smaller video.');
       return;
     }
 
@@ -127,104 +129,95 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     video.src = previewUrl;
   };
 
-const uploadToCloudflare = async (file: File): Promise<string> => {
-    console.log('Starting upload to Cloudflare...', {
+const uploadToR2 = async (file: File): Promise<string> => {
+    console.log('Starting upload to R2...', {
       fileName: file.name,
       fileSize: file.size,
       fileType: file.type
     });
 
-    return new Promise(async (resolve, reject) => {
-      try {
-        // Step 1: Get upload URL from worker
-        console.log('Requesting upload URL...');
-        const presignResponse = await fetch(`${CLOUDFLARE_WORKER_URL}/presign`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            fileName: file.name,
-            fileType: file.type,
-            fileSize: file.size
-          })
-        });
+    try {
+      // Step 1: Get pre-signed upload URL from Next.js backend
+      console.log('Requesting pre-signed upload URL...');
+      const uploadUrlResponse = await fetch('/api/upload-url', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: selectedUser,
+          fileName: file.name,
+          fileType: file.type,
+          fileSize: file.size
+        })
+      });
 
-        if (!presignResponse.ok) {
-          const error = await presignResponse.json();
-          throw new Error(error.error || 'Failed to get upload URL');
-        }
+      if (!uploadUrlResponse.ok) {
+        const error = await uploadUrlResponse.json();
+        throw new Error(error.error || 'Failed to get upload URL');
+      }
 
-        const { fileName, uploadUrl } = await presignResponse.json();
-        console.log('Got upload URL:', { fileName, uploadUrl });
+      const { uploadUrl, objectKey } = await uploadUrlResponse.json();
+      console.log('Got pre-signed URL:', { objectKey });
 
-        // Step 2: Upload file directly using XMLHttpRequest for progress tracking
+      // Step 2: Upload file directly to R2 using pre-signed URL
+      // Use XMLHttpRequest for progress tracking
+      return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
             const percentComplete = (e.loaded / e.total) * 100;
-            console.log(`Upload progress: ${percentComplete.toFixed(2)}%`, {
-              loaded: e.loaded,
-              total: e.total
-            });
+            console.log(`Upload progress: ${percentComplete.toFixed(2)}%`);
             setUploadProgress(Math.round(percentComplete));
           }
         });
 
         xhr.addEventListener('load', () => {
-          console.log('Upload completed', {
+          console.log('Upload response:', {
             status: xhr.status,
             statusText: xhr.statusText,
-            response: xhr.responseText
+            headers: xhr.getAllResponseHeaders()
           });
           
           if (xhr.status === 200) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              console.log('Parsed response:', response);
-              resolve(fileName); // Return the fileName from presign response
-            } catch (err) {
-              console.error('Failed to parse response:', err);
-              reject(new Error('Invalid response from server'));
-            }
+            resolve(objectKey);
           } else {
-            console.error('Upload failed with status:', xhr.status);
-            try {
-              const errorResponse = JSON.parse(xhr.responseText);
-              reject(new Error(errorResponse.error || 'Upload failed'));
-            } catch {
-              reject(new Error(`Upload failed with status ${xhr.status}`));
-            }
+            // Log actual error for debugging
+            console.error('Upload failed:', {
+              status: xhr.status,
+              response: xhr.responseText,
+              url: uploadUrl.substring(0, 100)
+            });
+            reject(new Error(`Upload failed with status ${xhr.status}`));
           }
         });
 
-        xhr.addEventListener('error', (e) => {
-          console.error('Upload error event:', e);
+        xhr.addEventListener('error', () => {
+          console.error('XHR error - likely CORS or network issue');
           reject(new Error('Network error during upload'));
         });
 
         xhr.addEventListener('abort', () => {
-          console.error('Upload aborted');
           reject(new Error('Upload was aborted'));
         });
 
         xhr.addEventListener('timeout', () => {
-          console.error('Upload timeout');
           reject(new Error('Upload timed out'));
         });
 
+        // CRITICAL: Must include Content-Type header that matches the presigned URL signature
         xhr.open('PUT', uploadUrl);
-        xhr.setRequestHeader('Content-Type', 'video/mp4');
-        xhr.timeout = 600000; // 10 minutes timeout for large files
-        console.log('Sending file to:', uploadUrl);
+        xhr.setRequestHeader('Content-Type', file.type);
+        xhr.timeout = 300000; // 5 minute timeout
+        
+        console.log('Sending file to R2...');
         xhr.send(file);
-
-      } catch (err) {
-        console.error('Upload setup error:', err);
-        reject(err);
-      }
-    });
+      });
+    } catch (err) {
+      console.error('Upload error:', err);
+      throw err;
+    }
   };
 
 const postData = async (fileName: string) => {
@@ -293,16 +286,22 @@ const getGifteID = async (query: string) => {
 
     try {
       console.log('Starting video submission process...');
-      // Upload to Cloudflare
-      const fileName = await uploadToCloudflare(selectedFile);
-      console.log('Upload successful, fileName:', fileName);
+      
+      // Check file size
+      if (selectedFile.size > MAX_FILE_SIZE) {
+        throw new Error(`Video is too large (${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB). Maximum is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
+      }
+      
+      // Upload to R2
+      const objectKey = await uploadToR2(selectedFile);
+      console.log('Upload successful, objectKey:', objectKey);
       
       // Save to database
-      await postData(fileName);
+      await postData(objectKey);
       console.log('Video submission complete!');
       
       // Navigate to success page
-      router.push(`/video-success?fileName=${encodeURIComponent(fileName)}`);
+      router.push(`/video-success?fileName=${encodeURIComponent(objectKey)}`);
     } catch (err) {
       console.error('Submission error:', err);
       setError((err as Error).message);
@@ -406,7 +405,7 @@ const getGifteID = async (query: string) => {
           px={4}
           mt={6}
         >
-          Upload your video (MP4, max 200MB, max 10 minutes)
+          Upload your video (MP4, max 100MB, max 10 minutes)
         </Text>
 
         {/* Hidden file input */}
@@ -469,7 +468,10 @@ const getGifteID = async (query: string) => {
         {loading && (
           <Box width={{ base: "90%", md: "400px" }} maxWidth="400px" mt={4}>
             <Text fontSize="sm" color="white" mb={2}>
-              {uploadProgress === 0 ? 'Preparing upload...' : `Uploading: ${uploadProgress}%`}
+              {uploadProgress === 0 
+                ? 'Preparing upload...' 
+                : `Uploading: ${uploadProgress}%`
+              }
             </Text>
             <Box 
               width="100%" 
