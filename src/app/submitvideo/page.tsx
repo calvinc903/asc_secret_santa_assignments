@@ -12,6 +12,8 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [uploadStartTime, setUploadStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState(0);
   const { users, loading: usersLoading } = useUsers();
   const [selectedUser, setSelectedUser] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -45,7 +47,32 @@ export default function SignUpPage() {
     };
   }, [videoPreviewUrl]);
 
+  // Timer effect to track upload duration
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null;
+    
+    if (uploadStartTime !== null && loading) {
+      interval = setInterval(() => {
+        setElapsedTime(Math.floor((Date.now() - uploadStartTime) / 1000));
+      }, 1000);
+    } else {
+      setElapsedTime(0);
+    }
 
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [uploadStartTime, loading]);
+
+
+
+  const formatElapsedTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const filteredUsers = users.filter(user => 
     user.toLowerCase().startsWith(searchInput.toLowerCase())
@@ -129,69 +156,157 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     video.src = previewUrl;
   };
 
-const uploadToR2 = async (file: File): Promise<string> => {
+  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+  const uploadPartWithRetry = async (
+    uploadUrl: string,
+    chunk: Blob,
+    partNumber: number,
+    maxRetries = 3
+  ): Promise<string> => {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(uploadUrl, {
+          method: 'PUT',
+          body: chunk,
+          headers: {
+            'Content-Type': 'application/octet-stream',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Part ${partNumber} upload failed with status ${response.status}`);
+        }
+
+        const etag = response.headers.get('ETag');
+        if (!etag) {
+          throw new Error(`Part ${partNumber} upload succeeded but no ETag received`);
+        }
+
+        return etag;
+      } catch (error) {
+        console.error(`Part ${partNumber} upload attempt ${attempt + 1} failed:`, error);
+        
+        if (attempt < maxRetries) {
+          // Exponential backoff: 2s, 4s, 8s
+          const backoffMs = Math.pow(2, attempt + 1) * 1000;
+          console.log(`Retrying part ${partNumber} in ${backoffMs}ms...`);
+          await sleep(backoffMs);
+        } else {
+          throw new Error(`Part ${partNumber} failed after ${maxRetries + 1} attempts: ${(error as Error).message}`);
+        }
+      }
+    }
+    throw new Error(`Part ${partNumber} upload failed`);
+  };
+
+  const uploadToR2 = async (file: File): Promise<string> => {
+    const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB chunks
+    const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+    
+    let uploadId: string | null = null;
+    let objectKey: string | null = null;
+
     try {
-      // Step 1: Get pre-signed upload URL from Next.js backend
-      const uploadUrlResponse = await fetch('/api/upload-url', {
+      // Step 1: Start multipart upload
+      const startResponse = await fetch('/api/multipart-upload/start', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: selectedUser,
           fileName: file.name,
           fileType: file.type,
-          fileSize: file.size
-        })
+        }),
       });
 
-      if (!uploadUrlResponse.ok) {
-        const error = await uploadUrlResponse.json();
-        throw new Error(error.error || 'Failed to get upload URL');
+      if (!startResponse.ok) {
+        const error = await startResponse.json();
+        throw new Error(error.error || 'Failed to start upload');
       }
 
-      const { uploadUrl, objectKey } = await uploadUrlResponse.json();
+      const startData = await startResponse.json();
+      uploadId = startData.uploadId;
+      objectKey = startData.objectKey;
 
-      // Step 2: Upload file directly to R2 using pre-signed URL
-      // Use XMLHttpRequest for progress tracking
-      return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
+      console.log(`Started multipart upload: ${uploadId}`);
 
-        xhr.upload.addEventListener('progress', (e) => {
-          if (e.lengthComputable) {
-            const percentComplete = (e.loaded / e.total) * 100;
-            setUploadProgress(Math.round(percentComplete));
-          }
+      // Step 2: Upload each part with retry logic
+      const uploadedParts: Array<{ PartNumber: number; ETag: string }> = [];
+      
+      for (let partNumber = 1; partNumber <= totalChunks; partNumber++) {
+        const start = (partNumber - 1) * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, file.size);
+        const chunk = file.slice(start, end);
+
+        console.log(`Uploading part ${partNumber}/${totalChunks} (${start}-${end})`);
+
+        // Get presigned URL for this part
+        const partUrlResponse = await fetch('/api/multipart-upload/part-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            objectKey,
+            uploadId,
+            partNumber,
+          }),
         });
 
-        xhr.addEventListener('load', () => {
-          if (xhr.status === 200) {
-            resolve(objectKey);
-          } else {
-            reject(new Error(`Upload failed with status ${xhr.status}`));
-          }
-        });
+        if (!partUrlResponse.ok) {
+          throw new Error(`Failed to get URL for part ${partNumber}`);
+        }
 
-        xhr.addEventListener('error', () => {
-          reject(new Error('Network error during upload'));
-        });
+        const { uploadUrl } = await partUrlResponse.json();
 
-        xhr.addEventListener('abort', () => {
-          reject(new Error('Upload was aborted'));
-        });
-
-        xhr.addEventListener('timeout', () => {
-          reject(new Error('Upload timed out'));
-        });
-
-        // CRITICAL: Must include Content-Type header that matches the presigned URL signature
-        xhr.open('PUT', uploadUrl);
-        xhr.setRequestHeader('Content-Type', file.type);
-        xhr.timeout = 300000; // 5 minute timeout
+        // Upload part with retry logic
+        const etag = await uploadPartWithRetry(uploadUrl, chunk, partNumber);
         
-        xhr.send(file);
+        uploadedParts.push({
+          PartNumber: partNumber,
+          ETag: etag,
+        });
+
+        // Update progress
+        const progress = Math.round((partNumber / totalChunks) * 100);
+        setUploadProgress(progress);
+        console.log(`Part ${partNumber}/${totalChunks} uploaded successfully. Progress: ${progress}%`);
+      }
+
+      // Step 3: Complete multipart upload
+      console.log('Completing multipart upload...');
+      const completeResponse = await fetch('/api/multipart-upload/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          objectKey,
+          uploadId,
+          parts: uploadedParts,
+        }),
       });
+
+      if (!completeResponse.ok) {
+        throw new Error('Failed to complete upload');
+      }
+
+      console.log('Upload completed successfully');
+      return objectKey;
+
     } catch (err) {
+      console.error('Error uploading to R2:', err);
+      
+      // Abort multipart upload on error
+      if (uploadId && objectKey) {
+        try {
+          console.log('Aborting multipart upload...');
+          await fetch('/api/multipart-upload/abort', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ objectKey, uploadId }),
+          });
+        } catch (abortError) {
+          console.error('Failed to abort upload:', abortError);
+        }
+      }
+      
       throw err;
     }
   };
@@ -221,6 +336,7 @@ const postData = async (fileName: string) => {
         }
         // Don't reset form here - let the success page handle it
     } catch (err) {
+        console.error('Error posting video data:', err);
         setError((err as Error).message);
         throw err; // Re-throw to be caught by handleSubmit
     }
@@ -239,6 +355,7 @@ const getGifteID = async (query: string) => {
             return null;
         }
     } catch (err) {
+        console.error('Error getting giftee ID:', err);
         setError((err as Error).message);
         return null;
     }
@@ -258,6 +375,7 @@ const getGifteID = async (query: string) => {
     setLoading(true);
     setError(null);
     setUploadProgress(0);
+    setUploadStartTime(Date.now());
 
     try {
       // Check file size
@@ -274,10 +392,12 @@ const getGifteID = async (query: string) => {
       // Navigate to success page
       router.push(`/video-success?fileName=${encodeURIComponent(objectKey)}`);
     } catch (err) {
+      console.error('Error during video submission:', err);
       setError((err as Error).message);
       alert(`Error: ${(err as Error).message}`);
     } finally {
       setLoading(false);
+      setUploadStartTime(null);
     }
   };
 
@@ -442,6 +562,7 @@ const getGifteID = async (query: string) => {
                 ? 'Preparing upload...' 
                 : `Uploading: ${uploadProgress}%`
               }
+              {elapsedTime > 0 && ` • ${formatElapsedTime(elapsedTime)}`}
             </Text>
             <Box 
               width="100%" 
