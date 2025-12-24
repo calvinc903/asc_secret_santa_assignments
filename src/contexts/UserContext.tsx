@@ -14,16 +14,63 @@ const UserContext = createContext<UserContextType>({
   error: null,
 });
 
+const USERS_CACHE_KEY = 'asc_secret_santa_users';
+const CACHE_EXPIRY_KEY = 'asc_secret_santa_users_expiry';
+const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
+
 export function UserProvider({ children }: { children: ReactNode }) {
   const [users, setUsers] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchUsers();
+    // Try to load from local storage first
+    const cachedUsers = loadUsersFromCache();
+    
+    if (cachedUsers) {
+      // Instantly set cached users
+      setUsers(cachedUsers);
+      setLoading(false);
+      
+      // Still fetch fresh data in the background
+      fetchUsers(true);
+    } else {
+      // No cache, fetch normally
+      fetchUsers(false);
+    }
   }, []);
 
-  const fetchUsers = async () => {
+  const loadUsersFromCache = (): string[] | null => {
+    try {
+      const cached = localStorage.getItem(USERS_CACHE_KEY);
+      const expiry = localStorage.getItem(CACHE_EXPIRY_KEY);
+      
+      if (cached && expiry) {
+        const expiryTime = parseInt(expiry, 10);
+        if (Date.now() < expiryTime) {
+          return JSON.parse(cached);
+        } else {
+          // Cache expired, clear it
+          localStorage.removeItem(USERS_CACHE_KEY);
+          localStorage.removeItem(CACHE_EXPIRY_KEY);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading users from cache:', err);
+    }
+    return null;
+  };
+
+  const saveUsersToCache = (userNames: string[]) => {
+    try {
+      localStorage.setItem(USERS_CACHE_KEY, JSON.stringify(userNames));
+      localStorage.setItem(CACHE_EXPIRY_KEY, (Date.now() + CACHE_DURATION).toString());
+    } catch (err) {
+      console.error('Error saving users to cache:', err);
+    }
+  };
+
+  const fetchUsers = async (isBackgroundFetch: boolean) => {
     try {
       const response = await fetch('/api/users');
       if (!response.ok) {
@@ -34,12 +81,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
         const name = user.name;
         return name.charAt(0).toUpperCase() + name.slice(1);
       });
+      
       setUsers(userNames);
+      saveUsersToCache(userNames);
     } catch (err) {
       console.error('Failed to fetch users:', err);
-      setError((err as Error).message);
+      if (!isBackgroundFetch) {
+        setError((err as Error).message);
+      }
     } finally {
-      setLoading(false);
+      if (!isBackgroundFetch) {
+        setLoading(false);
+      }
     }
   };
 
