@@ -503,7 +503,7 @@ const getGifteID = async (query: string) => {
           px={4}
           mt={6}
         >
-          Upload your video (MP4, max 100MB, max 10 minutes)
+          Upload your video (MP4 only)
         </Text>
 
         {/* Hidden file input */}
