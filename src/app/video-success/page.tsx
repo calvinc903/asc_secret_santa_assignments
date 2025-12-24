@@ -1,12 +1,12 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { Box, Button, Text, VStack } from '@chakra-ui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@/hooks/useWindowSize';
 
-export default function VideoSuccessPage() {
+function VideoSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const objectKey = searchParams.get('fileName'); // This is now the objectKey
@@ -163,5 +163,13 @@ export default function VideoSuccessPage() {
         </VStack>
       </VStack>
     </Box>
+  );
+}
+
+export default function VideoSuccessPage() {
+  return (
+    <Suspense fallback={<Box p={8}><Text>Loading...</Text></Box>}>
+      <VideoSuccessContent />
+    </Suspense>
   );
 }

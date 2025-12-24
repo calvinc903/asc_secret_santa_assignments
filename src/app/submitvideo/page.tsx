@@ -130,15 +130,8 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
   };
 
 const uploadToR2 = async (file: File): Promise<string> => {
-    console.log('Starting upload to R2...', {
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type
-    });
-
     try {
       // Step 1: Get pre-signed upload URL from Next.js backend
-      console.log('Requesting pre-signed upload URL...');
       const uploadUrlResponse = await fetch('/api/upload-url', {
         method: 'POST',
         headers: {
@@ -158,7 +151,6 @@ const uploadToR2 = async (file: File): Promise<string> => {
       }
 
       const { uploadUrl, objectKey } = await uploadUrlResponse.json();
-      console.log('Got pre-signed URL:', { objectKey });
 
       // Step 2: Upload file directly to R2 using pre-signed URL
       // Use XMLHttpRequest for progress tracking
@@ -168,33 +160,19 @@ const uploadToR2 = async (file: File): Promise<string> => {
         xhr.upload.addEventListener('progress', (e) => {
           if (e.lengthComputable) {
             const percentComplete = (e.loaded / e.total) * 100;
-            console.log(`Upload progress: ${percentComplete.toFixed(2)}%`);
             setUploadProgress(Math.round(percentComplete));
           }
         });
 
         xhr.addEventListener('load', () => {
-          console.log('Upload response:', {
-            status: xhr.status,
-            statusText: xhr.statusText,
-            headers: xhr.getAllResponseHeaders()
-          });
-          
           if (xhr.status === 200) {
             resolve(objectKey);
           } else {
-            // Log actual error for debugging
-            console.error('Upload failed:', {
-              status: xhr.status,
-              response: xhr.responseText,
-              url: uploadUrl.substring(0, 100)
-            });
             reject(new Error(`Upload failed with status ${xhr.status}`));
           }
         });
 
         xhr.addEventListener('error', () => {
-          console.error('XHR error - likely CORS or network issue');
           reject(new Error('Network error during upload'));
         });
 
@@ -211,11 +189,9 @@ const uploadToR2 = async (file: File): Promise<string> => {
         xhr.setRequestHeader('Content-Type', file.type);
         xhr.timeout = 300000; // 5 minute timeout
         
-        console.log('Sending file to R2...');
         xhr.send(file);
       });
     } catch (err) {
-      console.error('Upload error:', err);
       throw err;
     }
   };
@@ -258,7 +234,6 @@ const getGifteID = async (query: string) => {
         }
         const data = await response.json();
         if (data.length == 1) {
-            console.log(data[0].recipient);
             return data[0].recipient;
         } else {
             return null;
@@ -285,8 +260,6 @@ const getGifteID = async (query: string) => {
     setUploadProgress(0);
 
     try {
-      console.log('Starting video submission process...');
-      
       // Check file size
       if (selectedFile.size > MAX_FILE_SIZE) {
         throw new Error(`Video is too large (${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB). Maximum is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
@@ -294,16 +267,13 @@ const getGifteID = async (query: string) => {
       
       // Upload to R2
       const objectKey = await uploadToR2(selectedFile);
-      console.log('Upload successful, objectKey:', objectKey);
       
       // Save to database
       await postData(objectKey);
-      console.log('Video submission complete!');
       
       // Navigate to success page
       router.push(`/video-success?fileName=${encodeURIComponent(objectKey)}`);
     } catch (err) {
-      console.error('Submission error:', err);
       setError((err as Error).message);
       alert(`Error: ${(err as Error).message}`);
     } finally {

@@ -62,7 +62,6 @@ export async function POST(request) {
       objectKey,
     });
   } catch (error) {
-    console.error('Error generating upload URL:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

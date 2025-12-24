@@ -37,7 +37,6 @@ export async function POST(request) {
       viewUrl,
     });
   } catch (error) {
-    console.error('Error generating video URL:', error);
     return NextResponse.json(
       { error: error.message },
       { status: 500 }

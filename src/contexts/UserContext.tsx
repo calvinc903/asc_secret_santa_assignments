@@ -38,6 +38,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
       // No cache, fetch normally
       fetchUsers(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadUsersFromCache = (): string[] | null => {
