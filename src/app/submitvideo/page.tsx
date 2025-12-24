@@ -200,7 +200,7 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     throw new Error(`Part ${partNumber} upload failed`);
   };
 
-  const uploadToR2 = async (file: File): Promise<string> => {
+  const uploadToR2 = async (file: File): Promise<{ objectKey: string; durationSeconds: string }> => {
     const CHUNK_SIZE = 10 * 1024 * 1024; // 10MB chunks
     const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
     const startTime = Date.now();
@@ -286,6 +286,10 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
 
       if (!completeResponse.ok) {
         throw new Error('Failed to complete upload');
+      }
+
+      if (!objectKey) {
+        throw new Error('Object key is missing');
       }
 
       const duration = Date.now() - startTime;
