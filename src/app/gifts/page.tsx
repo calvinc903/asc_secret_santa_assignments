@@ -108,7 +108,7 @@ export default function GiftsPage() {
         </Text>
         {loading && <Text color="white">Loading...</Text>}
         {error && <Text color="red.500">{error}</Text>}
-        <Grid templateColumns="repeat(4, 1fr)" gap="6">
+        <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }} gap={{ base: "4", md: "6" }}>
           <For each={userNames}>
             {(userName) => (
               <Dialog.Root key={userName} size="cover">
@@ -122,8 +122,8 @@ export default function GiftsPage() {
                   onClick={() => handleCardClick(userName)}
                   opacity={clickedCards.has(userName) ? 0.5 : 1}
                   >
-                  <Card.Body display="flex" justifyContent="center" alignItems="center">
-                    <Text fontSize="2xl" fontWeight="bold">
+                  <Card.Body display="flex" justifyContent="center" alignItems="center" p={{ base: "3", md: "4" }}>
+                    <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" textAlign="center">
                     {userName}
                     </Text>
                   </Card.Body>
