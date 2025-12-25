@@ -59,9 +59,21 @@ function VideoPlayer({ userName, preloadedUrl, autoPlay = false }) {
     fetchVideo();
   }, [userName, preloadedUrl]);
 
-  if (loading) return <Text>Loading video...</Text>;
-  if (error) return <Text color="red.500">{error}</Text>;
-  if (!videoUrl) return <Text>No video available</Text>;
+  if (loading) return (
+    <Box width="100%" height="85vh" display="flex" alignItems="center" justifyContent="center" bg="black">
+      <Text color="white">Loading video...</Text>
+    </Box>
+  );
+  if (error) return (
+    <Box width="100%" height="85vh" display="flex" alignItems="center" justifyContent="center" bg="black">
+      <Text color="red.300">{error}</Text>
+    </Box>
+  );
+  if (!videoUrl) return (
+    <Box width="100%" height="85vh" display="flex" alignItems="center" justifyContent="center" bg="black">
+      <Text color="white">No video available</Text>
+    </Box>
+  );
 
   return (
     <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center" bg="black">
