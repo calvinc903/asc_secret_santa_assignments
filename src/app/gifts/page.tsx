@@ -21,6 +21,7 @@ import {
 export default function GiftsPage() {
   const { users: userNames, loading, error } = useUsers();
   const [preloadedVideos, setPreloadedVideos] = useState<Record<string, string>>({});
+  const [clickedCards, setClickedCards] = useState<Set<string>>(new Set());
   const hasPreloaded = useRef(false);
 
   // Preload all videos when users are loaded from cache or API (only once)
@@ -87,6 +88,11 @@ export default function GiftsPage() {
     preloadAllVideos();
   }, [userNames]);
 
+  const handleCardClick = (userName: string) => {
+    setClickedCards(prev => new Set([...prev, userName]));
+    console.log(`🎥 Card clicked for ${userName}`);
+  };
+
   return (
     <Box
       bg="#f24236"
@@ -113,6 +119,8 @@ export default function GiftsPage() {
                   borderRadius="md" 
                   boxShadow="md"
                   cursor="pointer"
+                  onClick={() => handleCardClick(userName)}
+                  opacity={clickedCards.has(userName) ? 0.5 : 1}
                   >
                   <Card.Body display="flex" justifyContent="center" alignItems="center">
                     <Text fontSize="2xl" fontWeight="bold">
@@ -124,17 +132,24 @@ export default function GiftsPage() {
                 <Portal>
                   <Dialog.Backdrop />
                   <Dialog.Positioner>
-                    <Dialog.Content>
-                      <Dialog.Header>
-                        <Dialog.Title>{userName}&apos;s Gift Video</Dialog.Title>
-                      </Dialog.Header>
+                    <Dialog.Content p={0} position="relative">
+                      <Dialog.CloseTrigger asChild>
+                        <CloseButton 
+                          size="lg"
+                          position="absolute"
+                          top="20px"
+                          right="20px"
+                          zIndex={10}
+                          bg="rgba(0,0,0,0.6)"
+                          color="white"
+                          borderRadius="full"
+                          _hover={{ bg: "rgba(0,0,0,0.8)" }}
+                        />
+                      </Dialog.CloseTrigger>
                       <Dialog.Body p={0}>
                         {/* Use the VideoPlayer component to load the video */}
                         <VideoPlayer userName={userName} preloadedUrl={preloadedVideos[userName.toLowerCase()]} autoPlay />
                       </Dialog.Body>
-                      <Dialog.CloseTrigger asChild>
-                        <CloseButton size="sm" />
-                      </Dialog.CloseTrigger>
                     </Dialog.Content>
                   </Dialog.Positioner>
                 </Portal>
