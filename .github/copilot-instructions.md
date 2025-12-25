@@ -62,15 +62,29 @@ R2_SECRET_ACCESS_KEY=<r2-secret>
 4. Handwriting animation reveals recipient using [Vara library](src/components/HandwritingText.js)
 
 **Video Gallery** ([gifts/page.tsx](src/app/gifts/page.tsx)):
-- Fetches all users, displays as clickable cards in 4-column grid
+- Uses `useUsers()` hook for instant card display from localStorage cache
+- Preloads ALL video URLs on page mount via parallel API calls
+- Displays users as clickable cards in responsive grid (2/3/4 columns)
 - Modal opens with [VideoPlayer.jsx](src/components/VideoPlayer.jsx)
-- Fetches latest video from `youtubevideos` collection, gets presigned R2 URL
+- VideoPlayer accepts `preloadedUrl` prop for instant playback (no loading delay)
+- Fallback: fetches video on-demand if preload failed
 
 ## State Management
 **UserContext** ([contexts/UserContext.tsx](src/contexts/UserContext.tsx)):
-- Caches user list in localStorage (24hr TTL)
+- Caches user list in localStorage (24hr TTL) with key `asc_secret_santa_users`
 - Instant render from cache + background refresh pattern
-- Export: `useUsers()` hook returning `{ users, loading, error }`
+- Returns formatted names (capitalized) as string array
+- Export: `useUsers()` hook returning `{ users: string[], loading: boolean, error: string | null }`
+- Used by: [from/page.tsx](src/app/from/page.tsx) for autocomplete, [gifts/page.tsx](src/app/gifts/page.tsx) for instant card display
+
+## Video Preloading Architecture
+**Performance Optimization** ([gifts/page.tsx](src/app/gifts/page.tsx)):
+1. UserContext loads cached users instantly (no API wait)
+2. useEffect triggers parallel video preload for all users
+3. For each user: fetch metadata from `youtubevideos` → get presigned URL from `/api/video-url`
+4. Store URLs in state map: `Record<lowercaseName, signedUrl>`
+5. Pass `preloadedUrl` prop to VideoPlayer for instant playback
+6. VideoPlayer.jsx checks for preloadedUrl first, falls back to fetch if missing
 
 ## MongoDB Connection Pattern
 Singleton client in [lib/mongodb.js](src/lib/mongodb.js):

@@ -1,12 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Text, Box } from '@chakra-ui/react';
 
-function VideoPlayer({ userName }) {
-  const [videoUrl, setVideoUrl] = useState('');
-  const [loading, setLoading] = useState(true);
+function VideoPlayer({ userName, preloadedUrl }) {
+  const [videoUrl, setVideoUrl] = useState(preloadedUrl || '');
+  const [loading, setLoading] = useState(!preloadedUrl);
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // If we already have a preloaded URL, use it
+    if (preloadedUrl) {
+      setVideoUrl(preloadedUrl);
+      setLoading(false);
+      return;
+    }
+
     const fetchVideo = async () => {
       try {
         // Get video metadata from database
@@ -50,7 +57,7 @@ function VideoPlayer({ userName }) {
     };
 
     fetchVideo();
-  }, [userName]);
+  }, [userName, preloadedUrl]);
 
   if (loading) return <Text>Loading video...</Text>;
   if (error) return <Text color="red.500">{error}</Text>;

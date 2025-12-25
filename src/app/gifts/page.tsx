@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import VideoPlayer from '@/components/VideoPlayer'; 
+import { useUsers } from '@/contexts/UserContext';
 import {
   Box,
   Stack,
@@ -16,38 +17,60 @@ import {
   Dialog,
   For
 } from '@chakra-ui/react';
-// Assume For is a helper to iterate over lists
-
-// Include the VideoPlayer component defined above here or import it if separated.
-
-type User = {
-  _id: string;
-  name: string;
-};
 
 export default function GiftsPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { users: userNames, loading, error } = useUsers();
+  const [preloadedVideos, setPreloadedVideos] = useState<Record<string, string>>({});
 
+  // Preload all videos when users are loaded from cache or API
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setUsers(data.sort((a: User, b: User) => a.name.localeCompare(b.name)));
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
+    if (userNames.length === 0) return;
+
+    const preloadAllVideos = async () => {
+      const videoUrlMap: Record<string, string> = {};
+
+      await Promise.all(
+        userNames.map(async (userName) => {
+          try {
+            const lowerName = userName.toLowerCase().trim();
+            // Get video metadata from database
+            const response = await fetch(`/api/youtubevideos?user_id=${lowerName}`);
+            if (!response.ok) return;
+
+            const data = await response.json();
+            if (data.length > 0) {
+              // Get the most recent video
+              const latestVideo = data.sort((a: any, b: any) => 
+                new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+              )[0];
+              
+              const objectKey = latestVideo.videoURL;
+              
+              // Get signed URL from backend
+              const urlResponse = await fetch('/api/video-url', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ objectKey }),
+              });
+              
+              if (urlResponse.ok) {
+                const { viewUrl } = await urlResponse.json();
+                videoUrlMap[lowerName] = viewUrl;
+              }
+            }
+          } catch (err) {
+            console.error(`Failed to preload video for ${userName}:`, err);
+          }
+        })
+      );
+
+      setPreloadedVideos(videoUrlMap);
     };
 
-    fetchUsers();
-  }, []);
+    preloadAllVideos();
+  }, [userNames]);
 
   return (
     <Box
@@ -59,15 +82,15 @@ export default function GiftsPage() {
       p={4}
     >
       <Stack align="center">
-        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
+        {/* <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           Click a card to reveal how their gift was bought!
-        </Text>
+        </Text> */}
         {loading && <Text color="white">Loading...</Text>}
         {error && <Text color="red.500">{error}</Text>}
         <Grid templateColumns="repeat(4, 1fr)" gap="6">
-          <For each={users}>
-            {(user) => (
-              <Dialog.Root key={user._id} size="lg">
+          <For each={userNames}>
+            {(userName) => (
+              <Dialog.Root key={userName} size="lg">
                 <Dialog.Trigger asChild>
                 <Card.Root
                   bg="white"
@@ -78,7 +101,7 @@ export default function GiftsPage() {
                   >
                   <Card.Body display="flex" justifyContent="center" alignItems="center">
                     <Text fontSize="2xl" fontWeight="bold">
-                    {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
+                    {userName}
                     </Text>
                   </Card.Body>
                 </Card.Root>
@@ -88,11 +111,11 @@ export default function GiftsPage() {
                   <Dialog.Positioner>
                     <Dialog.Content>
                       <Dialog.Header>
-                        <Dialog.Title>{user.name}&apos;s Gift Video</Dialog.Title>
+                        <Dialog.Title>{userName}&apos;s Gift Video</Dialog.Title>
                       </Dialog.Header>
                       <Dialog.Body>
                         {/* Use the VideoPlayer component to load the video */}
-                        <VideoPlayer userName={user.name} />
+                        <VideoPlayer userName={userName} preloadedUrl={preloadedVideos[userName.toLowerCase()]} />
                       </Dialog.Body>
                       <Dialog.Footer>
                         <Dialog.ActionTrigger asChild>
