@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import VideoPlayer from '@/components/VideoPlayer'; 
@@ -21,13 +21,17 @@ import {
 export default function GiftsPage() {
   const { users: userNames, loading, error } = useUsers();
   const [preloadedVideos, setPreloadedVideos] = useState<Record<string, string>>({});
+  const hasPreloaded = useRef(false);
 
-  // Preload all videos when users are loaded from cache or API
+  // Preload all videos when users are loaded from cache or API (only once)
   useEffect(() => {
-    if (userNames.length === 0) return;
+    if (userNames.length === 0 || hasPreloaded.current) return;
+    hasPreloaded.current = true;
 
     const preloadAllVideos = async () => {
+      console.log(`🎬 Starting to preload videos for ${userNames.length} users...`);
       const videoUrlMap: Record<string, string> = {};
+      const preloadedNames: string[] = [];
 
       await Promise.all(
         userNames.map(async (userName) => {
@@ -35,7 +39,10 @@ export default function GiftsPage() {
             const lowerName = userName.toLowerCase().trim();
             // Get video metadata from database
             const response = await fetch(`/api/youtubevideos?user_id=${lowerName}`);
-            if (!response.ok) return;
+            if (!response.ok) {
+              console.log(`⚠️  No video found for ${userName}`);
+              return;
+            }
 
             const data = await response.json();
             if (data.length > 0) {
@@ -58,15 +65,23 @@ export default function GiftsPage() {
               if (urlResponse.ok) {
                 const { viewUrl } = await urlResponse.json();
                 videoUrlMap[lowerName] = viewUrl;
+                preloadedNames.push(userName);
+                console.log(`✅ Preloaded video for ${userName}`);
+              } else {
+                console.log(`❌ Failed to get signed URL for ${userName}`);
               }
+            } else {
+              console.log(`⚠️  No video metadata found for ${userName}`);
             }
           } catch (err) {
-            console.error(`Failed to preload video for ${userName}:`, err);
+            console.error(`❌ Failed to preload video for ${userName}:`, err);
           }
         })
       );
 
       setPreloadedVideos(videoUrlMap);
+      console.log(`🎉 Video preloading complete! ${preloadedNames.length}/${userNames.length} videos ready`);
+      console.log(`📋 Preloaded videos for:`, preloadedNames.join(', '));
     };
 
     preloadAllVideos();
@@ -82,15 +97,15 @@ export default function GiftsPage() {
       p={4}
     >
       <Stack align="center">
-        {/* <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
-          Click a card to reveal how their gift was bought!
-        </Text> */}
+        <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
+          Secret Santa Gift Videos!
+        </Text>
         {loading && <Text color="white">Loading...</Text>}
         {error && <Text color="red.500">{error}</Text>}
         <Grid templateColumns="repeat(4, 1fr)" gap="6">
           <For each={userNames}>
             {(userName) => (
-              <Dialog.Root key={userName} size="lg">
+              <Dialog.Root key={userName} size="cover">
                 <Dialog.Trigger asChild>
                 <Card.Root
                   bg="white"
@@ -113,16 +128,10 @@ export default function GiftsPage() {
                       <Dialog.Header>
                         <Dialog.Title>{userName}&apos;s Gift Video</Dialog.Title>
                       </Dialog.Header>
-                      <Dialog.Body>
+                      <Dialog.Body p={0}>
                         {/* Use the VideoPlayer component to load the video */}
-                        <VideoPlayer userName={userName} preloadedUrl={preloadedVideos[userName.toLowerCase()]} />
+                        <VideoPlayer userName={userName} preloadedUrl={preloadedVideos[userName.toLowerCase()]} autoPlay />
                       </Dialog.Body>
-                      <Dialog.Footer>
-                        <Dialog.ActionTrigger asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </Dialog.ActionTrigger>
-                        <Button>Save</Button>
-                      </Dialog.Footer>
                       <Dialog.CloseTrigger asChild>
                         <CloseButton size="sm" />
                       </Dialog.CloseTrigger>

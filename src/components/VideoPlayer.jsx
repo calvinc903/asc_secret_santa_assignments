@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Text, Box } from '@chakra-ui/react';
 
-function VideoPlayer({ userName, preloadedUrl }) {
+function VideoPlayer({ userName, preloadedUrl, autoPlay = false }) {
   const [videoUrl, setVideoUrl] = useState(preloadedUrl || '');
   const [loading, setLoading] = useState(!preloadedUrl);
   const [error, setError] = useState(null);
@@ -64,10 +64,11 @@ function VideoPlayer({ userName, preloadedUrl }) {
   if (!videoUrl) return <Text>No video available</Text>;
 
   return (
-    <Box width="100%" maxWidth="800px" margin="0 auto">
+    <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center" bg="black">
       <video
         controls
-        style={{ width: '100%', borderRadius: '8px' }}
+        autoPlay={autoPlay}
+        style={{ width: '100%', height: '85vh', objectFit: 'contain' }}
         preload="metadata"
       >
         <source src={videoUrl} type="video/mp4" />
