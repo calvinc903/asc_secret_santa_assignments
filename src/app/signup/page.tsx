@@ -3,9 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Box, Button, Stack, Text, Input, Spinner } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../firebase'; // Ensure your firebase.js exports an initialized auth instance
-import { FirebaseError } from 'firebase/app';
 
 export default function SignUpPage() {
   const [name, setName] = useState('');
@@ -29,25 +26,10 @@ export default function SignUpPage() {
     
     setLoading(true);
     setError(null);
-    try {
-      // Create the user with email and password using async/await
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      // Update the user's profile with the display name
-      await updateProfile(user, { displayName: name });
-      
-      // Redirect or perform further actions as needed
-      router.push(`/`);
-    } catch (err) {
-        if (err instanceof FirebaseError) {
-          setError(err.message);
-        } else {
-          setError('An unexpected error occurred. Please try again.');
-        }
-    } finally {
-      setLoading(false);
-    }
+    // Note: Firebase authentication has been removed
+    // This page is no longer functional
+    setError('Sign up functionality has been removed');
+    setLoading(false);
   };
 
   return (
