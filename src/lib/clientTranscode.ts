@@ -95,7 +95,8 @@ export async function transcodeToMp4(
     
     console.log(`Fetching file data...`);
     const fileData = await fetchFile(file);
-    console.log(`File data fetched: ${fileData.byteLength} bytes`);
+    const fileDataSize = fileData instanceof Uint8Array ? fileData.byteLength : 0;
+    console.log(`File data fetched: ${fileDataSize} bytes`);
     
     console.log(`Writing to ffmpeg FS: ${inputName}`);
     await ffmpeg.writeFile(inputName, fileData);
@@ -122,9 +123,10 @@ export async function transcodeToMp4(
 
     console.log('Reading output file...');
     const data = await ffmpeg.readFile(outputName);
-    console.log(`Output file size: ${data.byteLength} bytes`);
+    const dataSize = data instanceof Uint8Array ? data.byteLength : 0;
+    console.log(`Output file size: ${dataSize} bytes`);
     
-    if (!data || data.byteLength === 0) {
+    if (!data || dataSize === 0) {
       throw new Error('Output file is empty - ffmpeg conversion produced no output');
     }
     
@@ -132,8 +134,11 @@ export async function transcodeToMp4(
     await ffmpeg.deleteFile(inputName);
     await ffmpeg.deleteFile(outputName);
 
+    // Convert to regular Uint8Array to avoid SharedArrayBuffer type issues
+    const outputData = data instanceof Uint8Array ? new Uint8Array(data) : data;
+    
     const transcodedFile = new File(
-      [data],
+      [outputData],
       `${file.name.replace(/\.[^/.]+$/, '')}.mp4`,
       { type: 'video/mp4' }
     );
