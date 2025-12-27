@@ -1,16 +1,6 @@
 import { getYoutubeVideosDB, postYoutubeVideoDB } from '../../../lib/youtubevideosDB';
 import { NextResponse } from 'next/server';
-import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
-
-// Initialize S3 client for R2
-const s3Client = new S3Client({
-  region: 'auto',
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-  credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-  },
-});
+import mux from '@/lib/mux';
 
 export async function GET(request) {
     try {
@@ -28,27 +18,46 @@ export async function GET(request) {
 
 export async function POST(request) {
     try {
-        const { user_id, videoURL } = await request.json();
+        const { user_id, assetId, playbackId } = await request.json();
         
-        // videoURL is now the objectKey (e.g., "user/John/1234567890-video.mp4")
-        const result = await postYoutubeVideoDB(user_id, videoURL);
-        console.log('Saved video for user:', user_id, 'objectKey:', videoURL);
+        // Get the old video data BEFORE updating database
+        const { getDB } = await import('../../../lib/mongodb');
+        const client = await getDB();
+        const db = client.db('2025');
+        const existingVideo = await db.collection('videos').findOne({ user_id });
+        const oldVideoURL = existingVideo ? existingVideo.videoURL : null;
         
-        // If there was an old video, delete it from R2
-        if (result.oldVideoURL && result.oldVideoURL !== videoURL) {
-            try {
-                console.log('Deleting old video from R2:', result.oldVideoURL);
-                const deleteCommand = new DeleteObjectCommand({
-                    Bucket: 'videos',
-                    Key: result.oldVideoURL,
-                });
-                await s3Client.send(deleteCommand);
-                console.log('Old video deleted successfully');
-            } catch (deleteError) {
-                console.error('Error deleting old video:', deleteError);
-                // Don't fail the whole request if deletion fails
+        // Delete old Mux asset BEFORE saving new one
+        if (oldVideoURL && oldVideoURL !== assetId) {
+            // Check if it looks like a Mux ID (not an R2 path)
+            const isMuxId = !oldVideoURL.includes('/') && !oldVideoURL.includes('.');
+            
+            if (isMuxId) {
+                try {
+                    console.log('Attempting to delete old Mux asset/upload:', oldVideoURL);
+                    
+                    // Try to delete as asset first (most common case after webhook updates)
+                    try {
+                        await mux.video.assets.delete(oldVideoURL);
+                        console.log('Old Mux asset deleted successfully');
+                    } catch (assetError) {
+                        // If it fails, it might be an uploadId, try deleting as upload
+                        console.log('Not an asset, trying to delete as upload...');
+                        await mux.video.uploads.cancel(oldVideoURL);
+                        console.log('Old Mux upload cancelled successfully');
+                    }
+                } catch (deleteError) {
+                    console.error('Error deleting old Mux resource:', deleteError);
+                    // Don't fail the whole request if deletion fails
+                }
+            } else {
+                console.log('Skipping deletion of old R2 object (not a Mux resource):', oldVideoURL);
             }
         }
+        
+        // Now save the new video to database
+        const result = await postYoutubeVideoDB(user_id, assetId, playbackId);
+        console.log('Saved Mux video for user:', user_id, 'uploadId/assetId:', assetId, 'playbackId:', playbackId);
         
         return NextResponse.json(result, { status: 201 });
     } catch (error) {

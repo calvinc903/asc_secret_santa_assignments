@@ -20,18 +20,18 @@ import {
 
 export default function GiftsPage() {
   const { users: userNames, loading, error } = useUsers();
-  const [preloadedVideos, setPreloadedVideos] = useState<Record<string, string>>({});
+  const [preloadedPlaybackIds, setPreloadedPlaybackIds] = useState<Record<string, string>>({});
   const [clickedCards, setClickedCards] = useState<Set<string>>(new Set());
   const hasPreloaded = useRef(false);
 
-  // Preload all videos when users are loaded from cache or API (only once)
+  // Preload all playback IDs when users are loaded from cache or API (only once)
   useEffect(() => {
     if (userNames.length === 0 || hasPreloaded.current) return;
     hasPreloaded.current = true;
 
     const preloadAllVideos = async () => {
       console.log(`🎬 Starting to preload videos for ${userNames.length} users...`);
-      const videoUrlMap: Record<string, string> = {};
+      const playbackIdMap: Record<string, string> = {};
       const preloadedNames: string[] = [];
 
       await Promise.all(
@@ -52,24 +52,14 @@ export default function GiftsPage() {
                 new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
               )[0];
               
-              const objectKey = latestVideo.videoURL;
+              const playbackId = latestVideo.playbackId;
               
-              // Get signed URL from backend
-              const urlResponse = await fetch('/api/video-url', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ objectKey }),
-              });
-              
-              if (urlResponse.ok) {
-                const { viewUrl } = await urlResponse.json();
-                videoUrlMap[lowerName] = viewUrl;
+              if (playbackId) {
+                playbackIdMap[lowerName] = playbackId;
                 preloadedNames.push(userName);
-                console.log(`✅ Preloaded video for ${userName}`);
+                console.log(`✅ Preloaded playback ID for ${userName}`);
               } else {
-                console.log(`❌ Failed to get signed URL for ${userName}`);
+                console.log(`⚠️  No playback ID found for ${userName}`);
               }
             } else {
               console.log(`⚠️  No video metadata found for ${userName}`);
@@ -80,7 +70,7 @@ export default function GiftsPage() {
         })
       );
 
-      setPreloadedVideos(videoUrlMap);
+      setPreloadedPlaybackIds(playbackIdMap);
       console.log(`🎉 Video preloading complete! ${preloadedNames.length}/${userNames.length} videos ready`);
       console.log(`📋 Preloaded videos for:`, preloadedNames.join(', '));
     };
@@ -148,7 +138,7 @@ export default function GiftsPage() {
                       </Dialog.CloseTrigger>
                       <Dialog.Body p={0}>
                         {/* Use the VideoPlayer component to load the video */}
-                        <VideoPlayer userName={userName} preloadedUrl={preloadedVideos[userName.toLowerCase()]} autoPlay />
+                        <VideoPlayer userName={userName} preloadedPlaybackId={preloadedPlaybackIds[userName.toLowerCase()]} autoPlay />
                       </Dialog.Body>
                     </Dialog.Content>
                   </Dialog.Positioner>

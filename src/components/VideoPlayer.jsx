@@ -1,15 +1,18 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { Text, Box } from '@chakra-ui/react';
+import MuxPlayer from '@mux/mux-player-react';
 
-function VideoPlayer({ userName, preloadedUrl, autoPlay = false }) {
-  const [videoUrl, setVideoUrl] = useState(preloadedUrl || '');
-  const [loading, setLoading] = useState(!preloadedUrl);
+function VideoPlayer({ userName, preloadedPlaybackId, autoPlay = false }) {
+  const [playbackId, setPlaybackId] = useState(preloadedPlaybackId || '');
+  const [loading, setLoading] = useState(!preloadedPlaybackId);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // If we already have a preloaded URL, use it
-    if (preloadedUrl) {
-      setVideoUrl(preloadedUrl);
+    // If we already have a preloaded playback ID, use it
+    if (preloadedPlaybackId) {
+      setPlaybackId(preloadedPlaybackId);
       setLoading(false);
       return;
     }
@@ -29,25 +32,15 @@ function VideoPlayer({ userName, preloadedUrl, autoPlay = false }) {
             new Date(b.timestamp) - new Date(a.timestamp)
           )[0];
           
-          const objectKey = latestVideo.videoURL;
-          
-          // Get signed URL from backend
-          const urlResponse = await fetch('/api/video-url', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ objectKey }),
-          });
-          
-          if (!urlResponse.ok) {
-            throw new Error('Failed to get video URL');
+          // Use the playbackId directly from the database
+          if (latestVideo.playbackId) {
+            setPlaybackId(latestVideo.playbackId);
+          } else {
+            // Old video from R2 system - needs to be re-uploaded
+            setError('Please re-upload your video using the new system');
           }
-          
-          const { viewUrl } = await urlResponse.json();
-          setVideoUrl(viewUrl);
         } else {
-          setVideoUrl('');
+          setPlaybackId('');
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : String(err));
@@ -57,7 +50,7 @@ function VideoPlayer({ userName, preloadedUrl, autoPlay = false }) {
     };
 
     fetchVideo();
-  }, [userName, preloadedUrl]);
+  }, [userName, preloadedPlaybackId]);
 
   if (loading) return (
     <Box width="100%" height="85vh" display="flex" alignItems="center" justifyContent="center" bg="black">
@@ -69,7 +62,7 @@ function VideoPlayer({ userName, preloadedUrl, autoPlay = false }) {
       <Text color="red.300">{error}</Text>
     </Box>
   );
-  if (!videoUrl) return (
+  if (!playbackId) return (
     <Box width="100%" height="85vh" display="flex" alignItems="center" justifyContent="center" bg="black">
       <Text color="white">No video available</Text>
     </Box>
@@ -77,15 +70,15 @@ function VideoPlayer({ userName, preloadedUrl, autoPlay = false }) {
 
   return (
     <Box width="100%" height="100%" display="flex" alignItems="center" justifyContent="center" bg="black">
-      <video
-        controls
-        autoPlay={autoPlay}
-        style={{ width: '100%', height: '85vh', objectFit: 'contain' }}
-        preload="metadata"
-      >
-        <source src={videoUrl} type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+      <MuxPlayer
+        playbackId={playbackId}
+        metadata={{
+          video_title: `${userName}'s Secret Santa Gift`,
+        }}
+        autoPlay={autoPlay ? 'muted' : false}
+        style={{ width: '100%', height: '85vh' }}
+        streamType="on-demand"
+      />
     </Box>
   );
 }
