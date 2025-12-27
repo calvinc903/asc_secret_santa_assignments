@@ -23,11 +23,9 @@ export async function POST(request) {
     const event = JSON.parse(body);
     console.log('Received Mux webhook:', event.type, 'Event ID:', event.id);
 
-    // Respond immediately with 200 to avoid timeout
-    // Process async operations after response
-    setImmediate(async () => {
-      try {
-        switch (event.type) {
+    // Process webhook synchronously to avoid race conditions
+    try {
+      switch (event.type) {
           case 'video.upload.asset_created':
             // Upload completed and asset created
             const uploadId = event.object.id;  // Upload ID from object.id
@@ -49,13 +47,21 @@ export async function POST(request) {
             const playbackId = playbackIds?.[0]?.id;
             
             console.log(`Asset ${readyAssetId} is ready with playback ID ${playbackId}`);
+            console.log(`Full event.data:`, JSON.stringify(event.data, null, 2));
             
             if (playbackId) {
               // Find the video record by assetId (stored in videoURL) and add playbackId
+              console.log(`Looking for record with videoURL = ${readyAssetId}`);
               const updateResult2 = await updateYoutubeVideoByUploadId(readyAssetId, {
                 playbackId: playbackId,
               });
-              console.log(`Added playbackId to asset ${readyAssetId}:`, updateResult2);
+              console.log(`Added playbackId to asset ${readyAssetId}:`, JSON.stringify(updateResult2));
+              
+              if (updateResult2.matchedCount === 0) {
+                console.error(`WARNING: No record found with videoURL = ${readyAssetId}`);
+              }
+            } else {
+              console.error(`WARNING: No playbackId found in webhook event`);
             }
             break;
 
@@ -69,10 +75,10 @@ export async function POST(request) {
           default:
             console.log(`Unhandled event type: ${event.type}`);
         }
-      } catch (asyncError) {
-        console.error('Async webhook processing error:', asyncError);
-      }
-    });
+    } catch (processingError) {
+      console.error('Webhook processing error:', processingError);
+      return Response.json({ error: processingError.message }, { status: 500 });
+    }
 
     return Response.json({ received: true }, { status: 200 });
   } catch (error) {
