@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   
   // COOP/COEP headers required for ffmpeg.wasm multi-thread support
   // These headers enable SharedArrayBuffer for faster video transcoding
-  // Using 'credentialless' allows loading from CDN while maintaining security
+  // Safari works better with 'require-corp' than 'credentialless'
   async headers() {
     return [
       {
@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Cross-Origin-Embedder-Policy',
-            value: 'credentialless',
+            value: 'require-corp',
           },
         ],
       },

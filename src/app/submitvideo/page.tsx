@@ -31,6 +31,27 @@ export default function SignUpPage() {
   const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500MB max
   const MAX_DURATION = 10 * 60; // 10 minutes in seconds
 
+  // Check multi-thread support
+  const [mtSupported, setMtSupported] = useState<boolean | null>(null);
+  
+  // Debug: Check isolation status
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isIsolated = crossOriginIsolated;
+      const hasSAB = typeof SharedArrayBuffer !== 'undefined';
+      const mtAvailable = isIsolated && hasSAB;
+      
+      setMtSupported(mtAvailable);
+      
+      console.log('=== Cross-Origin Isolation Debug ===');
+      console.log('crossOriginIsolated:', isIsolated);
+      console.log('SharedArrayBuffer available:', hasSAB);
+      console.log('Multi-thread mode:', mtAvailable);
+      console.log('User Agent:', navigator.userAgent);
+      console.log('===================================');
+    }
+  }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -431,8 +452,11 @@ const getGifteID = async (query: string) => {
       // Save to database
       await postData(objectKey);
       
+      // Calculate total time (transcoding + upload)
+      const totalDuration = uploadStartTime ? ((Date.now() - uploadStartTime) / 1000).toFixed(2) : durationSeconds;
+      
       // Navigate to success page
-      router.push(`/video-success?fileName=${encodeURIComponent(objectKey)}&duration=${durationSeconds}`);
+      router.push(`/video-success?fileName=${encodeURIComponent(objectKey)}&duration=${totalDuration}`);
     } catch (err) {
       console.error('Error during video submission:', err);
       setError((err as Error).message);
@@ -456,7 +480,24 @@ const getGifteID = async (query: string) => {
       <Stack alignItems="center" width="100%" maxWidth="600px">
         <Text fontSize={{ base: "lg", md: "4xl" }} color="white" fontWeight="bold" textAlign="center" px={4}>
           Submit your Video
-        </Text> 
+        </Text>
+        
+        {/* Multi-thread Status Indicator */}
+        {mtSupported !== null && (
+          <Box 
+            mt={2} 
+            px={3} 
+            py={1} 
+            borderRadius="md" 
+            bg={mtSupported ? "green.500" : "orange.400"}
+            fontSize="xs"
+            fontWeight="bold"
+            color="white"
+          >
+            {mtSupported ? "✓ Multi-Thread Mode (Fast)" : "⚠ Single-Thread Mode (Slower)"}
+          </Box>
+        )}
+        
         <Text fontSize={{ base: "xs", md: "md" }} color="white" textAlign="center" px={4} mt={2}>
           Select your name from the dropdown
         </Text>
@@ -630,6 +671,9 @@ const getGifteID = async (query: string) => {
                 } : undefined}
               />
             </Box>
+            <Text fontSize="xs" color="yellow.200" mt={2} fontWeight="medium">
+              ⚠️ Do not close or reload this page
+            </Text>
             <style jsx>{`
               @keyframes pulse {
                 0%, 100% { opacity: 0.4; }
@@ -666,6 +710,9 @@ const getGifteID = async (query: string) => {
                 } : undefined}
               />
             </Box>
+            <Text fontSize="xs" color="yellow.200" mt={2} fontWeight="medium">
+              ⚠️ Do not close or reload this page
+            </Text>
             <style jsx>{`
               @keyframes pulse {
                 0%, 100% { opacity: 0.4; }
