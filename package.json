@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "node scripts/copy-ffmpeg-assets.js"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^3.7.4",
@@ -15,6 +16,8 @@
     "@chakra-ui/react": "^3.13.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/util": "^0.12.2",
     "@nextui-org/navbar": "^2.0.37",
     "@nextui-org/react": "^2.6.11",
     "@nextui-org/use-pagination": "^2.2.3",

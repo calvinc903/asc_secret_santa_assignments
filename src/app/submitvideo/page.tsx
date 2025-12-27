@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Box, Stack, Text, Input, VStack, Button, Spinner, Flex } from '@chakra-ui/react';
 import { useRouter } from 'next/navigation';
 import { useUsers } from '@/contexts/UserContext';
+import { transcodeToMp4, canUseMultiThread, estimateTranscodeTime } from '@/lib/clientTranscode';
 
 
 export default function SignUpPage() {
@@ -14,6 +15,9 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null);
   const [uploadStartTime, setUploadStartTime] = useState<number | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [isTranscoding, setIsTranscoding] = useState(false);
+  const [transcodeProgress, setTranscodeProgress] = useState(0);
+  const [transcodedFile, setTranscodedFile] = useState<File | null>(null);
   const { users, loading: usersLoading } = useUsers();
   const [selectedUser, setSelectedUser] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -118,20 +122,22 @@ const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Reset error
+    // Reset error and transcoded file
     setError(null);
+    setTranscodedFile(null);
 
-    // Validate file type
-    if (file.type !== 'video/mp4') {
-      setError('Only MP4 files are allowed');
+    // Validate file type - accept all video types
+    if (!file.type.startsWith('video/')) {
+      setError('Please select a video file');
       return;
     }
 
-    // Don't check file size here - let the API validate it
-    // Just warn if very large
+    // Warn if very large - transcoding may be slow
     if (file.size > 500 * 1024 * 1024) {
-      setError('File is too large (over 500MB). Please choose a smaller video.');
-      return;
+      const fileSizeMB = (file.size / 1024 / 1024).toFixed(0);
+      const estimatedTime = estimateTranscodeTime(Number(fileSizeMB));
+      setError(`Large file (${fileSizeMB}MB) - transcoding may take ${estimatedTime}. Consider using a smaller video on mobile devices.`);
+      // Continue anyway, just warn
     }
 
     // Create video preview URL
@@ -386,13 +392,41 @@ const getGifteID = async (query: string) => {
     setUploadStartTime(Date.now());
 
     try {
-      // Check file size
-      if (selectedFile.size > MAX_FILE_SIZE) {
-        throw new Error(`Video is too large (${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB). Maximum is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
+      let fileToUpload = selectedFile;
+
+      // Check if we need to transcode (or use cached transcoded file)
+      if (!transcodedFile) {
+        setIsTranscoding(true);
+        setTranscodeProgress(0);
+        
+        console.log('Starting client-side transcoding...');
+        console.log(`Multi-thread available: ${canUseMultiThread()}`);
+        
+        try {
+          fileToUpload = await transcodeToMp4(selectedFile, (percent) => {
+            setTranscodeProgress(percent);
+          });
+          setTranscodedFile(fileToUpload);
+          console.log('Transcoding complete');
+        } catch (transcodeError) {
+          console.error('Transcoding failed:', transcodeError);
+          throw new Error(`Video conversion failed: ${(transcodeError as Error).message}. Try a different video or browser.`);
+        } finally {
+          setIsTranscoding(false);
+        }
+      } else {
+        // Use cached transcoded file
+        fileToUpload = transcodedFile;
+        console.log('Using cached transcoded file');
+      }
+      
+      // Check file size after transcoding
+      if (fileToUpload.size > MAX_FILE_SIZE) {
+        throw new Error(`Video is too large after conversion (${(fileToUpload.size / (1024 * 1024)).toFixed(1)}MB). Maximum is ${MAX_FILE_SIZE / (1024 * 1024)}MB.`);
       }
       
       // Upload to R2
-      const { objectKey, durationSeconds } = await uploadToR2(selectedFile);
+      const { objectKey, durationSeconds } = await uploadToR2(fileToUpload);
       
       // Save to database
       await postData(objectKey);
@@ -503,14 +537,23 @@ const getGifteID = async (query: string) => {
           px={4}
           mt={6}
         >
-          Upload your video (MP4 only)
+          Upload your video (any format)
+        </Text>
+        <Text 
+          fontSize={{ base: "xs", md: "sm" }} 
+          color="whiteAlpha.900" 
+          textAlign="center"
+          px={4}
+          mt={1}
+        >
+          Videos will be automatically converted for web playback
         </Text>
 
         {/* Hidden file input */}
         <Input
           ref={fileInputRef}
           type="file"
-          accept="video/mp4"
+          accept="video/*"
           onChange={handleFileSelect}
           display="none"
         />
@@ -562,8 +605,42 @@ const getGifteID = async (query: string) => {
           </Box>
         )}
 
+        {/* Transcode Progress */}
+        {isTranscoding && (
+          <Box width={{ base: "90%", md: "400px" }} maxWidth="400px" mt={4}>
+            <Text fontSize="sm" color="white" mb={2}>
+              Converting video for web playback: {transcodeProgress}%
+              {elapsedTime > 0 && ` • ${formatElapsedTime(elapsedTime)}`}
+              {!canUseMultiThread() && ' (single-thread mode - may be slower)'}
+            </Text>
+            <Box 
+              width="100%" 
+              height="8px" 
+              bg="whiteAlpha.300" 
+              borderRadius="md" 
+              overflow="hidden"
+            >
+              <Box 
+                width={transcodeProgress === 0 ? '100%' : `${transcodeProgress}%`}
+                height="100%" 
+                bg="yellow.300" 
+                transition="width 0.3s ease"
+                style={transcodeProgress === 0 ? {
+                  animation: 'pulse 1.5s ease-in-out infinite'
+                } : undefined}
+              />
+            </Box>
+            <style jsx>{`
+              @keyframes pulse {
+                0%, 100% { opacity: 0.4; }
+                50% { opacity: 1; }
+              }
+            `}</style>
+          </Box>
+        )}
+
         {/* Upload Progress */}
-        {loading && (
+        {loading && !isTranscoding && (
           <Box width={{ base: "90%", md: "400px" }} maxWidth="400px" mt={4}>
             <Text fontSize="sm" color="white" mb={2}>
               {uploadProgress === 0 
@@ -627,7 +704,7 @@ const getGifteID = async (query: string) => {
                 borderRadius="50%"
                 animation="spin 0.8s linear infinite"
               />
-              <Text>Uploading...</Text>
+              <Text>{isTranscoding ? 'Converting...' : 'Uploading...'}</Text>
               <style jsx>{`
                 @keyframes spin {
                   to { transform: rotate(360deg); }
