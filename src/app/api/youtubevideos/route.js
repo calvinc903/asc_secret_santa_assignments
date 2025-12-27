@@ -33,26 +33,29 @@ export async function POST(request) {
             const isMuxId = !oldVideoURL.includes('/') && !oldVideoURL.includes('.');
             
             if (isMuxId) {
+                console.log('Attempting to delete old Mux resource:', oldVideoURL);
+                
+                // Try to delete as asset first (most common case after webhook updates)
                 try {
-                    console.log('Attempting to delete old Mux asset/upload:', oldVideoURL);
-                    
-                    // Try to delete as asset first (most common case after webhook updates)
+                    await mux.video.assets.delete(oldVideoURL);
+                    console.log('✅ Old Mux asset deleted successfully:', oldVideoURL);
+                } catch (assetError) {
+                    // If it fails, it might be an uploadId, try canceling as upload
+                    console.log('Not an asset, trying to cancel as upload...');
                     try {
-                        await mux.video.assets.delete(oldVideoURL);
-                        console.log('Old Mux asset deleted successfully');
-                    } catch (assetError) {
-                        // If it fails, it might be an uploadId, try deleting as upload
-                        console.log('Not an asset, trying to delete as upload...');
                         await mux.video.uploads.cancel(oldVideoURL);
-                        console.log('Old Mux upload cancelled successfully');
+                        console.log('✅ Old Mux upload cancelled successfully:', oldVideoURL);
+                    } catch (uploadError) {
+                        console.error('❌ Failed to delete/cancel old Mux resource:', oldVideoURL, uploadError.message);
+                        // Don't fail the whole request if deletion fails
                     }
-                } catch (deleteError) {
-                    console.error('Error deleting old Mux resource:', deleteError);
-                    // Don't fail the whole request if deletion fails
                 }
             } else {
-                console.log('Skipping deletion of old R2 object (not a Mux resource):', oldVideoURL);
+                console.log('⏭️  Skipping deletion of old R2 object (not a Mux resource):', oldVideoURL);
             }
+        } else if (oldVideoURL === assetId) {
+            console.log('ℹ️  Old videoURL matches new uploadId, skipping deletion');
+        }
         }
         
         // Now save the new video to database
