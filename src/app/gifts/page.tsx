@@ -122,7 +122,7 @@ export default function GiftsPage() {
                 <Portal>
                   <Dialog.Backdrop />
                   <Dialog.Positioner>
-                    <Dialog.Content p={0} position="relative">
+                    <Dialog.Content p={0} position="relative" bg="black" overflow="hidden">
                       <Dialog.CloseTrigger asChild>
                         <CloseButton 
                           size="lg"
@@ -136,7 +136,7 @@ export default function GiftsPage() {
                           _hover={{ bg: "rgba(0,0,0,0.8)" }}
                         />
                       </Dialog.CloseTrigger>
-                      <Dialog.Body p={0}>
+                      <Dialog.Body p={0} bg="black">
                         {/* Use the VideoPlayer component to load the video */}
                         <VideoPlayer userName={userName} preloadedPlaybackId={preloadedPlaybackIds[userName.toLowerCase()]} />
                       </Dialog.Body>
