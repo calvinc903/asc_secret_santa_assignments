@@ -75,7 +75,7 @@ function VideoPlayer({ userName, preloadedPlaybackId, autoPlay = false }) {
         metadata={{
           video_title: `${userName}'s Secret Santa Gift`,
         }}
-        autoPlay={autoPlay ? 'muted' : false}
+        muted={false}
         style={{ width: '100%', height: '85vh' }}
         streamType="on-demand"
       />

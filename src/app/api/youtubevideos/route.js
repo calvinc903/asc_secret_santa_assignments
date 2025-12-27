@@ -56,7 +56,6 @@ export async function POST(request) {
         } else if (oldVideoURL === assetId) {
             console.log('ℹ️  Old videoURL matches new uploadId, skipping deletion');
         }
-        }
         
         // Now save the new video to database
         const result = await postYoutubeVideoDB(user_id, assetId, playbackId);

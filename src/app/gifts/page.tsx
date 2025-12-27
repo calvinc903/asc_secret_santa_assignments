@@ -138,7 +138,7 @@ export default function GiftsPage() {
                       </Dialog.CloseTrigger>
                       <Dialog.Body p={0}>
                         {/* Use the VideoPlayer component to load the video */}
-                        <VideoPlayer userName={userName} preloadedPlaybackId={preloadedPlaybackIds[userName.toLowerCase()]} autoPlay />
+                        <VideoPlayer userName={userName} preloadedPlaybackId={preloadedPlaybackIds[userName.toLowerCase()]} />
                       </Dialog.Body>
                     </Dialog.Content>
                   </Dialog.Positioner>
