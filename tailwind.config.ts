@@ -10,7 +10,7 @@ export default {
   theme: {
     extend: {
       screens: {
-        xxl: "920px", // Custom breakpoint at 884px
+        xxl: "1120px", // Custom breakpoint
       },
       colors: {
         background: "var(--background)",

@@ -48,8 +48,9 @@ export async function POST(request) {
 
             // Check if user already has a video
             const { getDB } = await import('@/lib/mongodb');
+            const config = require('../../../../config.js');
             const client = await getDB();
-            const db = client.db('2025');
+            const db = client.db(config.currentYearDatabase);
             const collection = db.collection('videos');
             
             const existingVideo = await collection.findOne({ user_id: passthrough });

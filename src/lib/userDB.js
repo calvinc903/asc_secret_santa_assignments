@@ -1,10 +1,11 @@
 'use server'
 
 import { getDB } from './mongodb.js';
+const config = require('../../config.js');
 
 export async function getUsersDB(query = {}) {
     const client = await getDB();
-    const db = client.db('2025');
+    const db = client.db(config.currentYearDatabase);
     const data = await db.collection('users').find(query).toArray();
     return JSON.parse(JSON.stringify(data));
 }

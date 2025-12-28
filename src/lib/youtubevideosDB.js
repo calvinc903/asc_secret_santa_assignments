@@ -1,17 +1,18 @@
 'use server'
 
 import { getDB } from './mongodb.js';
+const config = require('../../config.js');
 
 export async function getYoutubeVideosDB(query = {}) {
     const client = await getDB();
-    const db = client.db('2025');
+    const db = client.db(config.currentYearDatabase);
     const data = await db.collection('videos').find(query).toArray();
     return JSON.parse(JSON.stringify(data));
 }
 
 export async function postYoutubeVideoDB(user_id, assetId, playbackId) {
     const client = await getDB();
-    const db = client.db('2025');
+    const db = client.db(config.currentYearDatabase);
     const timestamp = new Date().toISOString();
     
     // First, get the old video data if it exists
@@ -40,7 +41,7 @@ export async function postYoutubeVideoDB(user_id, assetId, playbackId) {
 
 export async function updateYoutubeVideoByUploadId(uploadId, updates) {
     const client = await getDB();
-    const db = client.db('2025');
+    const db = client.db(config.currentYearDatabase);
     const timestamp = new Date().toISOString();
     
     const result = await db.collection('videos').updateOne(
