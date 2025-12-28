@@ -129,8 +129,32 @@ function VideoSuccessContent() {
           Video is being processed and will be available shortly on the videos page.
         </Text>
 
-        {/* Back Button */}
+        <Text 
+          fontSize={{ base: "sm", md: "lg" }} 
+          color="white" 
+          textAlign="center"
+          px={4}
+          mt={2}
+        >
+          Check if your video is uploaded by clicking the name of your giftee! Do not click anyone else&apos;s name including your own to avoid spoilers!
+        </Text>
+
+        {/* Navigation Buttons */}
         <VStack gap={3}>
+          <Button
+            bg="white"
+            color="#f24236"
+            fontWeight="bold"
+            py={6}
+            px={8}
+            borderRadius="md"
+            fontSize={{ base: "lg", md: "xl" }}
+            onClick={() => router.push('/gifts')}
+            width="250px"
+          >
+            Go to Videos Page
+          </Button>
+          
           <Button
             bg="white"
             color="#f24236"
@@ -143,20 +167,6 @@ function VideoSuccessContent() {
             width="250px"
           >
             Resubmit Video
-          </Button>
-          
-          <Button
-            bg="white"
-            color="#f24236"
-            fontWeight="bold"
-            py={6}
-            px={8}
-            borderRadius="md"
-            fontSize={{ base: "lg", md: "xl" }}
-            onClick={() => router.push('/')}
-            width="250px"
-          >
-            ← Back to Home
           </Button>
         </VStack>
       </VStack>
