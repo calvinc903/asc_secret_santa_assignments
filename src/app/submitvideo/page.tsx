@@ -205,6 +205,8 @@ const getGifteID = async (query: string) => {
             onFocus={() => setShowDropdown(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search and select your name..."
+            autoComplete="off"
+            data-form-type="other"
             size="lg"
             variant="outline"
             borderColor="white"

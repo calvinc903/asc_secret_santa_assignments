@@ -135,6 +135,8 @@ export default function FromPage() {
             onFocus={() => setShowDropdown(true)}
             onKeyDown={handleKeyDown}
             placeholder="Search and select your name..."
+            autoComplete="off"
+            data-form-type="other"
             size={{ base: "xs", md: "lg" }}
             variant="outline"
             borderColor="white"
