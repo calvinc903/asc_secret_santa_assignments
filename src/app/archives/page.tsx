@@ -154,16 +154,14 @@ export default function ArchivesPage() {
                     )}
                     {yearData.spreadsheetLink && (
                       <Text fontSize={{ base: "sm", md: "md" }} color="#333" mb={2}>
-                        <Text 
-                          as="a" 
+                        <a 
                           href={yearData.spreadsheetLink} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          color="#0066cc" 
-                          textDecoration="underline"
+                          style={{ color: "#0066cc", textDecoration: "underline" }}
                         >
                           View Gift Spreadsheet
-                        </Text>
+                        </a>
                       </Text>
                     )}
                     {yearData.playerCount > 0 && (
@@ -193,16 +191,14 @@ export default function ArchivesPage() {
                         </Text>
                         {assignment.videoURL ? (
                           <Text fontSize={{ base: "sm", md: "md" }} color="#333">
-                            <Text 
-                              as="a" 
+                            <a 
                               href={assignment.videoURL.startsWith('http') ? assignment.videoURL : `https://www.youtube.com/watch?v=${assignment.videoURL}`} 
                               target="_blank" 
                               rel="noopener noreferrer" 
-                              color="#0066cc" 
-                              textDecoration="underline"
+                              style={{ color: "#0066cc", textDecoration: "underline" }}
                             >
                               Watch Video
-                            </Text>
+                            </a>
                           </Text>
                         ) : (
                           <Text fontSize={{ base: "sm", md: "md" }} color="gray.500" fontStyle="italic">
