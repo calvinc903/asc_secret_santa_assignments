@@ -121,22 +121,12 @@ function VideoSuccessContent() {
         )}
 
         <Text 
-          fontSize={{ base: "md", md: "xl" }} 
-          color="white" 
-          textAlign="center"
-          px={4}
-        >
-          Video is being processed and will be available shortly on the videos page.
-        </Text>
-
-        <Text 
           fontSize={{ base: "sm", md: "lg" }} 
           color="white" 
           textAlign="center"
           px={4}
-          mt={2}
         >
-          Check if your video is uploaded by clicking the name of your giftee! Do not click anyone else&apos;s name including your own to avoid spoilers!
+          Plz don&apos;t spoil yourself LOL. Videos after uploaded may take a few mins to appear here. If you are checking if your video is submitted correctly click your giftee&apos;s card NOT your own!
         </Text>
 
         {/* Navigation Buttons */}

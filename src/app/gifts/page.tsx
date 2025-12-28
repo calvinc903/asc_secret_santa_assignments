@@ -96,9 +96,12 @@ export default function GiftsPage() {
         <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
           Secret Santa Gift Videos!
         </Text>
+        <Text fontSize={{ base: "sm", md: "lg" }} color="white" textAlign="center" maxW="600px" px={4}>
+          Click on a card to watch that person's gift video! 
+        </Text>
         {loading && <Text color="white">Loading...</Text>}
         {error && <Text color="red.500">{error}</Text>}
-        <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }} gap={{ base: "4", md: "6" }}>
+        <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }} gap={{ base: "4", md: "6" }} mt={{ base: "6", md: "8" }}>
           <For each={userNames}>
             {(userName) => (
               <Dialog.Root key={userName} size="cover">
@@ -106,8 +109,7 @@ export default function GiftsPage() {
                 <Card.Root
                   bg="white"
                   color="#f24236"
-                  borderRadius="md" 
-                  boxShadow="md"
+                  borderRadius="md"
                   cursor="pointer"
                   onClick={() => handleCardClick(userName)}
                   opacity={clickedCards.has(userName) ? 0.5 : 1}

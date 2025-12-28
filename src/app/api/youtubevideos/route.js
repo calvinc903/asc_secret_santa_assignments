@@ -9,10 +9,13 @@ export async function GET(request) {
         if (searchParams.has('user_id')) {
             query.user_id = searchParams.get('user_id');
         }
+        console.log('GET /api/youtubevideos - Query:', query);
         const data = await getYoutubeVideosDB(query);
+        console.log('GET /api/youtubevideos - Found:', data.length, 'videos');
         return NextResponse.json(data);
     } catch (error) {
-        return NextResponse.json({ error: 'Failed to fetch youtube video' }, { status: 500 });
+        console.error('GET /api/youtubevideos - Error:', error);
+        return NextResponse.json({ error: 'Failed to fetch youtube video', details: error.message }, { status: 500 });
     }
 }
 
