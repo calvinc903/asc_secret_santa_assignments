@@ -26,42 +26,65 @@ export async function POST(request) {
     // Process webhook synchronously to avoid race conditions
     try {
       switch (event.type) {
-          case 'video.upload.asset_created':
-            // Upload completed and asset created
-            const uploadId = event.object.id;  // Upload ID from object.id
-            const assetId = event.data.asset_id;  // Asset ID from data.asset_id
-            
-            console.log(`Upload ${uploadId} created asset ${assetId}`);
-            
-            // Update database: replace uploadId with assetId in videoURL field
-            const updateResult1 = await updateYoutubeVideoByUploadId(uploadId, {
-              videoURL: assetId,
-            });
-            console.log(`Updated videoURL from uploadId to assetId:`, updateResult1);
-            break;
-
           case 'video.asset.ready':
             // Asset is processed and ready for playback
-            const readyAssetId = event.object.id;  // Asset ID from object.id
+            const readyAssetId = event.object.id;  // Asset ID
             const playbackIds = event.data.playback_ids;
             const playbackId = playbackIds?.[0]?.id;
+            const passthrough = event.data.passthrough;  // Contains user_id (recipient)
             
             console.log(`Asset ${readyAssetId} is ready with playback ID ${playbackId}`);
-            console.log(`Full event.data:`, JSON.stringify(event.data, null, 2));
+            console.log(`Passthrough user_id: ${passthrough}`);
             
-            if (playbackId) {
-              // Find the video record by assetId (stored in videoURL) and add playbackId
-              console.log(`Looking for record with videoURL = ${readyAssetId}`);
-              const updateResult2 = await updateYoutubeVideoByUploadId(readyAssetId, {
-                playbackId: playbackId,
-              });
-              console.log(`Added playbackId to asset ${readyAssetId}:`, JSON.stringify(updateResult2));
-              
-              if (updateResult2.matchedCount === 0) {
-                console.error(`WARNING: No record found with videoURL = ${readyAssetId}`);
-              }
-            } else {
+            if (!playbackId) {
               console.error(`WARNING: No playbackId found in webhook event`);
+              break;
+            }
+
+            if (!passthrough) {
+              console.error(`WARNING: No passthrough user_id found in webhook event`);
+              break;
+            }
+
+            // Check if user already has a video
+            const { getDB } = await import('@/lib/mongodb');
+            const client = await getDB();
+            const db = client.db('2025');
+            const collection = db.collection('videos');
+            
+            const existingVideo = await collection.findOne({ user_id: passthrough });
+            let oldAssetId = null;
+
+            if (existingVideo && existingVideo.videoURL) {
+              oldAssetId = existingVideo.videoURL;
+              console.log(`User ${passthrough} has existing video with assetId: ${oldAssetId}`);
+            }
+
+            // Update or create MongoDB entry with new video
+            const timestamp = new Date().toISOString();
+            await collection.updateOne(
+              { user_id: passthrough },
+              { 
+                $set: { 
+                  videoURL: readyAssetId,
+                  playbackId: playbackId,
+                  timestamp 
+                } 
+              },
+              { upsert: true }
+            );
+            console.log(`Updated/created video entry for user ${passthrough}`);
+
+            // Delete old Mux asset if it exists and is different from new one
+            if (oldAssetId && oldAssetId !== readyAssetId) {
+              try {
+                console.log(`Deleting old Mux asset: ${oldAssetId}`);
+                await mux.video.assets.delete(oldAssetId);
+                console.log(`Successfully deleted old Mux asset: ${oldAssetId}`);
+              } catch (deleteError) {
+                console.error(`Failed to delete old Mux asset ${oldAssetId}:`, deleteError);
+                // Don't fail the webhook if deletion fails
+              }
             }
             break;
 

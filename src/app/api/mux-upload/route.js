@@ -3,7 +3,7 @@ import mux from '@/lib/mux';
 
 export async function POST(request) {
   try {
-    const { userName } = await request.json();
+    const { userName, recipientId } = await request.json();
 
     if (!userName) {
       return NextResponse.json(
@@ -12,11 +12,18 @@ export async function POST(request) {
       );
     }
 
-    // Create a direct upload URL
+    if (!recipientId) {
+      return NextResponse.json(
+        { error: 'recipientId is required' },
+        { status: 400 }
+      );
+    }
+
+    // Create a direct upload URL with recipient ID in passthrough
     const upload = await mux.video.uploads.create({
       new_asset_settings: {
         playback_policy: ['public'],
-        passthrough: userName.toLowerCase(), // Store username as passthrough for tracking
+        passthrough: recipientId, // Store recipient user_id for webhook processing
       },
       cors_origin: '*', // Configure based on your domain in production
       timeout: 3600, // 1 hour timeout

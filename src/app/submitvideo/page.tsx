@@ -15,6 +15,7 @@ export default function SignUpPage() {
   const [uploadId, setUploadId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [uploadStartTime, setUploadStartTime] = useState<number | null>(null);
+  const [elapsedTime, setElapsedTime] = useState<number>(0);
   const { users, loading: usersLoading } = useUsers();
   const [selectedUser, setSelectedUser] = useState('');
   const [searchInput, setSearchInput] = useState('');
@@ -46,6 +47,20 @@ export default function SignUpPage() {
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [uploadStartTime]);
+
+  // Update elapsed time every second during upload
+  useEffect(() => {
+    if (!uploadStartTime) {
+      setElapsedTime(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - uploadStartTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
   }, [uploadStartTime]);
 
   const filteredUsers = users.filter(user => 
@@ -105,10 +120,20 @@ export default function SignUpPage() {
     }
 
     try {
+      // Get the recipient ID first
+      const gifteeID = await getGifteID(selectedUser.toLowerCase());
+      if (!gifteeID) {
+        alert('You are not on the list!');
+        throw new Error('User not on the list');
+      }
+
       const response = await fetch('/api/mux-upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userName: selectedUser }),
+        body: JSON.stringify({ 
+          userName: selectedUser,
+          recipientId: gifteeID  // Pass recipient ID for webhook
+        }),
       });
 
       if (!response.ok) {
@@ -117,26 +142,9 @@ export default function SignUpPage() {
 
       const data = await response.json();
       setUploadId(data.uploadId);
+      console.log('Created upload:', data.uploadId, 'for recipient:', gifteeID);
 
-      // Get the recipient ID
-      const gifteeID = await getGifteID(selectedUser.toLowerCase());
-      if (!gifteeID) {
-        alert('You are not on the list!');
-        throw new Error('User not on the list');
-      }
-
-      // Save uploadId to database immediately so webhooks can find it
-      await fetch('/api/youtubevideos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          user_id: gifteeID, 
-          assetId: data.uploadId,  // Store uploadId initially
-          playbackId: ''  // Will be updated via webhooks
-        }),
-      });
-      console.log('Saved uploadId to database:', data.uploadId);
-
+      // No immediate MongoDB save - webhook will handle it when asset is ready
       return data.uploadUrl;
     } catch (err) {
       console.error('Error creating Mux upload:', err);
@@ -204,7 +212,7 @@ const getGifteID = async (query: string) => {
           Submit your Video
         </Text> 
         <Text fontSize={{ base: "xs", md: "md" }} color="white" textAlign="center" px={4} mt={2}>
-          Select your name from the dropdown
+          Select <Text as="span" fontWeight="bold">YOUR NAME</Text> from the dropdown
         </Text>
         <Text fontSize={{ base: "xs", md: "sm" }} color="white" textAlign="center" px={4} mt={2} fontWeight="semibold">
           ⚠️ WARNING: Do NOT close this page while your video is uploading!
@@ -288,6 +296,18 @@ const getGifteID = async (query: string) => {
             </Box>
           )}
         </Box>
+
+        {/* Upload Timer */}
+        {uploadStartTime && (
+          <Box mt={4} p={4} bg="white" borderRadius="md" width={{ base: "90%", md: "500px" }} maxWidth="500px">
+            <Text fontSize="2xl" fontWeight="bold" color="#f24236" textAlign="center">
+              {Math.floor(elapsedTime / 60)}:{(elapsedTime % 60).toString().padStart(2, '0')}
+            </Text>
+            <Text fontSize="sm" color="#f24236" textAlign="center" mt={1}>
+              Upload in progress...
+            </Text>
+          </Box>
+        )}
 
         {/* Mux Uploader Component */}
         <Box 
