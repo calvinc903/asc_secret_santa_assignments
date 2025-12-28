@@ -8,35 +8,26 @@ import { useSession } from "next-auth/react";
 
 
 export default function Home() {
+  // Calculate days during render, not in useEffect
+  const daysUntilNextChristmas = (): number => {
+    const today = new Date();
+    const nextChristmas = new Date(2026, 0, 2); // January 2, 2026 (month is 0-indexed)
+  
+    // Calculate the difference in milliseconds and convert to days
+    const msInDay = 24 * 60 * 60 * 1000;
+    return Math.ceil((nextChristmas.getTime() - today.getTime()) / msInDay);
+  };
+
+  const daysToChristmas = daysUntilNextChristmas();
+  
+  const daysText = daysToChristmas === 0 
+    ? "Have a Great Christmas Party!"
+    : daysToChristmas < 0 
+    ? "TBD"
+    : `${daysToChristmas} Days to the Christmas Party!`;
+
   useEffect(() => {
-    const daysUntilNextChristmas = (): number => {
-      const today = new Date();
-      const currentYear = today.getFullYear();
-      const nextChristmas = new Date(currentYear, 11, 25); // December 25th
-    
-      // If today is after December 25th, set next Christmas to December 25th of the next year
-      if (today > nextChristmas) {
-        nextChristmas.setFullYear(currentYear + 1);
-      }
-    
-      // Calculate the difference in milliseconds and convert to days
-      const msInDay = 24 * 60 * 60 * 1000;
-      return Math.ceil((nextChristmas.getTime() - today.getTime()) / msInDay);
-    };
-
-    const daysToChristmas = daysUntilNextChristmas();
-
-
-    const daysElement = document.getElementById("days");
-    if (daysElement) {
-      if (daysToChristmas === 0) {
-        daysElement.textContent = "Have a Great Christmas Party!";
-      } else if (daysToChristmas < 0) {
-        daysElement.textContent = `The Christmas Party was ${-1 * daysToChristmas} days ago.`;
-      } else {
-        daysElement.textContent = `${daysToChristmas} Days to the Christmas Party!`;
-      }
-    }
+    // Only handle snow animation in useEffect
 
     const snowDrop = (num: number) => {
       for (let i = 0; i < num; i++) {
@@ -86,7 +77,9 @@ export default function Home() {
             ________________________________________
           </Text> */}
           <hr style={{ borderTop: '2px solid white', width: '80%' }} />
-          <Text fontWeight="bold" fontSize={{ base: "sm", md: "3xl" }} color="white" id="days"></Text>
+          <Text fontWeight="bold" fontSize={{ base: "sm", md: "3xl" }} color="white">
+            {daysText}
+          </Text>
           <hr style={{ borderTop: '2px solid white', width: '80%' }} />
             <button
               className="bg-white hover:bg-gray-100 text-red-500 font-bold py-2 rounded w-1/4 text-xs md:text-lg mt-4"              
