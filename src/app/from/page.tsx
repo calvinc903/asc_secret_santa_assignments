@@ -127,14 +127,22 @@ export default function FromPage() {
         <Box position="relative" width={{ base: "90%", md: "400px" }} maxWidth="400px" ref={dropdownRef}>
           <Input
             ref={inputRef}
+            name="user_participant_name"
             value={searchInput}
             onChange={(e) => {
               setSearchInput(e.target.value);
               setShowDropdown(true);
             }}
-            onFocus={() => setShowDropdown(true)}
+            onFocus={(e) => {
+              e.currentTarget.removeAttribute('readonly');
+              setShowDropdown(true);
+            }}
             onKeyDown={handleKeyDown}
             placeholder="Search and select your name..."
+            autoComplete="nope"
+            data-form-type="other"
+            data-lpignore="true"
+            readOnly
             size={{ base: "xs", md: "lg" }}
             variant="outline"
             borderColor="white"
