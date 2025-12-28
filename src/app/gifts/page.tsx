@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import LiteYouTubeEmbed from 'react-lite-youtube-embed';
 import 'react-lite-youtube-embed/dist/LiteYouTubeEmbed.css';
 import VideoPlayer from '@/components/VideoPlayer'; 
+import { useUsers } from '@/contexts/UserContext';
 import {
   Box,
   Stack,
@@ -16,38 +17,71 @@ import {
   Dialog,
   For
 } from '@chakra-ui/react';
-// Assume For is a helper to iterate over lists
-
-// Include the VideoPlayer component defined above here or import it if separated.
-
-type User = {
-  _id: string;
-  name: string;
-};
 
 export default function GiftsPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { users: userNames, loading, error } = useUsers();
+  const [preloadedPlaybackIds, setPreloadedPlaybackIds] = useState<Record<string, string>>({});
+  const [clickedCards, setClickedCards] = useState<Set<string>>(new Set());
+  const hasPreloaded = useRef(false);
 
+  // Preload all playback IDs when users are loaded from cache or API (only once)
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await fetch('/api/users');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setUsers(data.sort((a: User, b: User) => a.name.localeCompare(b.name)));
-      } catch (err) {
-        setError((err as Error).message);
-      } finally {
-        setLoading(false);
-      }
+    if (userNames.length === 0 || hasPreloaded.current) return;
+    hasPreloaded.current = true;
+
+    const preloadAllVideos = async () => {
+      console.log(`🎬 Starting to preload videos for ${userNames.length} users...`);
+      const playbackIdMap: Record<string, string> = {};
+      const preloadedNames: string[] = [];
+
+      await Promise.all(
+        userNames.map(async (userName) => {
+          try {
+            const lowerName = userName.toLowerCase().trim();
+            // Get video metadata from database
+            const response = await fetch(`/api/youtubevideos?user_id=${lowerName}`);
+            if (!response.ok) {
+              console.log(`⚠️  No video found for ${userName}`);
+              return;
+            }
+
+            const data = await response.json();
+            if (data.length > 0) {
+              // Get the most recent video
+              const latestVideo = data.sort((a: any, b: any) => 
+                new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+              )[0];
+              
+              const playbackId = latestVideo.playbackId;
+              
+              if (playbackId) {
+                playbackIdMap[lowerName] = playbackId;
+                preloadedNames.push(userName);
+                console.log(`✅ Preloaded playback ID for ${userName}`);
+              } else {
+                console.log(`⚠️  No playback ID found for ${userName}`);
+              }
+            } else {
+              console.log(`⚠️  No video metadata found for ${userName}`);
+            }
+          } catch (err) {
+            console.error(`❌ Failed to preload video for ${userName}:`, err);
+          }
+        })
+      );
+
+      setPreloadedPlaybackIds(playbackIdMap);
+      console.log(`🎉 Video preloading complete! ${preloadedNames.length}/${userNames.length} videos ready`);
+      console.log(`📋 Preloaded videos for:`, preloadedNames.join(', '));
     };
 
-    fetchUsers();
-  }, []);
+    preloadAllVideos();
+  }, [userNames]);
+
+  const handleCardClick = (userName: string) => {
+    setClickedCards(prev => new Set([...prev, userName]));
+    console.log(`🎥 Card clicked for ${userName}`);
+  };
 
   return (
     <Box
@@ -60,14 +94,14 @@ export default function GiftsPage() {
     >
       <Stack align="center">
         <Text fontSize={{ base: "2xl", md: "4xl" }} color="white" fontWeight="bold">
-          Click a card to reveal how their gift was bought!
+          Secret Santa Gift Videos!
         </Text>
         {loading && <Text color="white">Loading...</Text>}
         {error && <Text color="red.500">{error}</Text>}
-        <Grid templateColumns="repeat(4, 1fr)" gap="6">
-          <For each={users}>
-            {(user) => (
-              <Dialog.Root key={user._id} size="lg">
+        <Grid templateColumns={{ base: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" }} gap={{ base: "4", md: "6" }}>
+          <For each={userNames}>
+            {(userName) => (
+              <Dialog.Root key={userName} size="cover">
                 <Dialog.Trigger asChild>
                 <Card.Root
                   bg="white"
@@ -75,10 +109,12 @@ export default function GiftsPage() {
                   borderRadius="md" 
                   boxShadow="md"
                   cursor="pointer"
+                  onClick={() => handleCardClick(userName)}
+                  opacity={clickedCards.has(userName) ? 0.5 : 1}
                   >
-                  <Card.Body display="flex" justifyContent="center" alignItems="center">
-                    <Text fontSize="2xl" fontWeight="bold">
-                    {user.name.charAt(0).toUpperCase() + user.name.slice(1)}
+                  <Card.Body display="flex" justifyContent="center" alignItems="center" p={{ base: "3", md: "4" }}>
+                    <Text fontSize={{ base: "lg", md: "xl", lg: "2xl" }} fontWeight="bold" textAlign="center">
+                    {userName}
                     </Text>
                   </Card.Body>
                 </Card.Root>
@@ -86,23 +122,24 @@ export default function GiftsPage() {
                 <Portal>
                   <Dialog.Backdrop />
                   <Dialog.Positioner>
-                    <Dialog.Content>
-                      <Dialog.Header>
-                        <Dialog.Title>{user.name}&apos;s Gift Video</Dialog.Title>
-                      </Dialog.Header>
-                      <Dialog.Body>
-                        {/* Use the VideoPlayer component to load the video */}
-                        <VideoPlayer userName={user.name} />
-                      </Dialog.Body>
-                      <Dialog.Footer>
-                        <Dialog.ActionTrigger asChild>
-                          <Button variant="outline">Cancel</Button>
-                        </Dialog.ActionTrigger>
-                        <Button>Save</Button>
-                      </Dialog.Footer>
+                    <Dialog.Content p={0} position="relative" bg="black" overflow="hidden">
                       <Dialog.CloseTrigger asChild>
-                        <CloseButton size="sm" />
+                        <CloseButton 
+                          size="lg"
+                          position="absolute"
+                          top="20px"
+                          right="20px"
+                          zIndex={10}
+                          bg="rgba(0,0,0,0.6)"
+                          color="white"
+                          borderRadius="full"
+                          _hover={{ bg: "rgba(0,0,0,0.8)" }}
+                        />
                       </Dialog.CloseTrigger>
+                      <Dialog.Body p={0} bg="black">
+                        {/* Use the VideoPlayer component to load the video */}
+                        <VideoPlayer userName={userName} preloadedPlaybackId={preloadedPlaybackIds[userName.toLowerCase()]} />
+                      </Dialog.Body>
                     </Dialog.Content>
                   </Dialog.Positioner>
                 </Portal>

@@ -5,17 +5,17 @@ import { Box, Button, Text, VStack } from '@chakra-ui/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Confetti from 'react-confetti';
 import { useWindowSize } from '@/hooks/useWindowSize';
+import MuxPlayer from '@mux/mux-player-react';
 
 function VideoSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const objectKey = searchParams.get('fileName'); // This is now the objectKey
+  const userName = searchParams.get('fileName'); // User's name
   const duration = searchParams.get('duration');
   const { width, height } = useWindowSize();
   const [numberOfPieces, setNumberOfPieces] = useState(500);
-  const [videoUrl, setVideoUrl] = useState('');
+  const [playbackId, setPlaybackId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     // Stop shooting confetti after 3 seconds (existing pieces will continue falling)
@@ -27,38 +27,40 @@ function VideoSuccessContent() {
   }, []);
 
   useEffect(() => {
-    const getVideoUrl = async () => {
-      if (!objectKey) {
+    const fetchPlaybackId = async () => {
+      if (!userName) {
         setLoading(false);
         return;
       }
 
       try {
-        const response = await fetch('/api/video-url', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ objectKey }),
-        });
-
+        // Fetch video metadata from database
+        const response = await fetch(`/api/youtubevideos?user_id=${userName.toLowerCase().trim()}`);
         if (!response.ok) {
-          throw new Error('Failed to get video URL');
+          throw new Error('Failed to fetch video metadata');
         }
 
-        const { viewUrl } = await response.json();
-        setVideoUrl(viewUrl);
+        const data = await response.json();
+        if (data.length > 0) {
+          const latestVideo = data.sort((a: any, b: any) => 
+            new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          )[0];
+          
+          if (latestVideo.playbackId) {
+            setPlaybackId(latestVideo.playbackId);
+          }
+        }
       } catch (error) {
-        console.error('Error getting video URL:', error);
+        console.error('Error fetching playback ID:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    getVideoUrl();
-  }, [objectKey]);
+    fetchPlaybackId();
+  }, [userName]);
 
-  if (!objectKey) {
+  if (!userName) {
     return (
       <Box bg="#f24236" minHeight="100vh" display="flex" alignItems="center" justifyContent="center" p={4}>
         <Text color="white" fontSize="2xl">No video found</Text>
@@ -95,7 +97,7 @@ function VideoSuccessContent() {
           fontWeight="bold" 
           textAlign="center"
         >
-          🎄 Video Submitted Successfully! 🎅
+          Video Submitted Successfully!
         </Text>
 
         {duration && (
@@ -122,35 +124,10 @@ function VideoSuccessContent() {
           fontSize={{ base: "md", md: "xl" }} 
           color="white" 
           textAlign="center"
+          px={4}
         >
-          Here&apos;s a preview of your video:
+          Video is being processed and will be available shortly on the videos page.
         </Text>
-
-        {/* Video Preview */}
-        {loading ? (
-          <Text color="white">Loading video...</Text>
-        ) : videoUrl ? (
-          <Box
-            width="100%"
-            maxWidth="800px"
-            borderRadius="lg"
-            overflow="hidden"
-            boxShadow="2xl"
-            bg="black"
-          >
-            <video
-              ref={videoRef}
-              controls
-              style={{ width: '100%', maxHeight: '500px' }}
-              preload="metadata"
-            >
-              <source src={videoUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          </Box>
-        ) : (
-          <Text color="white">Failed to load video</Text>
-        )}
 
         {/* Back Button */}
         <VStack gap={3}>
