@@ -15,29 +15,10 @@ import {
 } from '@nextui-org/react';
 import Image from 'next/image';
 import SantaHatImage from '../../public/Santa Red Hat Icon.png';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../firebase'; // Ensure this exports an initialized auth instance
 
 export default function CustomNavbar() {
   const currentPath = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
-
-  // Listen for Firebase auth state changes
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
 
   const menuItems = [
     { label: 'Home', href: '/' },
@@ -46,7 +27,7 @@ export default function CustomNavbar() {
     { label: 'Videos', href: '/gifts' },
     {
       label: 'Spreadsheet',
-      href: 'https://docs.google.com/spreadsheets/d/1Nvjh48RAc9l-lNNdLw5dhgJpnLsdOGNO7uNFatB1NuA/edit?gid=1912476070#gid=1912476070',
+      href: 'https://docs.google.com/spreadsheets/d/13qDgupji-Bod1UbMZkUGbbL_saxBg8TBWZr7W_QZDbk/edit?gid=1912476070#gid=1912476070',
     },
   ];
 

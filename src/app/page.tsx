@@ -3,7 +3,6 @@
 import { Stack, Text } from "@chakra-ui/react";
 import { Button } from "@/components/ui/button"
 import { useEffect } from "react";
-import { useSession } from "next-auth/react";
 
 
 
