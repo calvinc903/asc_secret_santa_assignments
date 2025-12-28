@@ -35,6 +35,19 @@ export default function SignUpPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Warn user before leaving page during upload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (uploadStartTime) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [uploadStartTime]);
+
   const filteredUsers = users.filter(user => 
     user.toLowerCase().startsWith(searchInput.toLowerCase())
   );
@@ -192,6 +205,9 @@ const getGifteID = async (query: string) => {
         </Text> 
         <Text fontSize={{ base: "xs", md: "md" }} color="white" textAlign="center" px={4} mt={2}>
           Select your name from the dropdown
+        </Text>
+        <Text fontSize={{ base: "xs", md: "sm" }} color="white" textAlign="center" px={4} mt={2} fontWeight="semibold">
+          ⚠️ WARNING: Do NOT close this page while your video is uploading!
         </Text>
         
         {/* User Selection Dropdown */}
