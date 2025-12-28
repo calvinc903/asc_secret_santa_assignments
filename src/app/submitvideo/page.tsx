@@ -209,6 +209,9 @@ const getGifteID = async (query: string) => {
         <Text fontSize={{ base: "xs", md: "sm" }} color="white" textAlign="center" px={4} mt={2} fontWeight="semibold">
           ⚠️ WARNING: Do NOT close this page while your video is uploading!
         </Text>
+        <Text fontSize={{ base: "xs", md: "sm" }} color="white" textAlign="center" px={4} mt={1}>
+          Video upload may take up to 5-6 minutes depending on video size.
+        </Text>
         
         {/* User Selection Dropdown */}
         <Box position="relative" width={{ base: "90%", md: "400px" }} maxWidth="400px" ref={dropdownRef}>
