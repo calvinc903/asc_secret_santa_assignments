@@ -86,6 +86,12 @@ export default function GiftsPage() {
     console.log(`🎥 Card clicked for ${userName}`);
   };
 
+  const handleVideoFetched = (userName: string, playbackId: string) => {
+    const lowerName = userName.toLowerCase();
+    setPreloadedPlaybackIds(prev => ({ ...prev, [lowerName]: playbackId }));
+    console.log(`✅ Video fetched and cached for ${userName}`);
+  };
+
   const fetchGifter = async (userName: string) => {
     try {
       const lowerName = userName.toLowerCase().trim();
@@ -187,36 +193,13 @@ export default function GiftsPage() {
                       </Dialog.CloseTrigger>
                       <Dialog.Body p={0} bg="black">
                         {/* Use the VideoPlayer component to load the video */}
-                        {preloadedPlaybackIds[userName.toLowerCase()] ? (
-                          <VideoPlayer userName={userName} preloadedPlaybackId={preloadedPlaybackIds[userName.toLowerCase()]} />
-                        ) : (
-                          <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="400px" p={8}>
-                            <Text fontSize="2xl" color="white" mb={4} textAlign="center">
-                              No video available for {userName}
-                            </Text>
-                            {revealedGifters[userName.toLowerCase()] ? (
-                              <Box textAlign="center">
-                                <Text fontSize="xl" color="white" mb={2}>
-                                  Your Secret Santa is:
-                                </Text>
-                                <Text fontSize="3xl" color="#f24236" fontWeight="bold" bg="white" px={6} py={3} borderRadius="md">
-                                  {revealedGifters[userName.toLowerCase()]}
-                                </Text>
-                              </Box>
-                            ) : (
-                              <Button
-                                onClick={() => handleRevealGifter(userName)}
-                                bg="#f24236"
-                                color="white"
-                                size="lg"
-                                px={6}
-                                _hover={{ bg: "#d63529" }}
-                              >
-                                Reveal My Secret Santa
-                              </Button>
-                            )}
-                          </Box>
-                        )}
+                        <VideoPlayer 
+                          userName={userName} 
+                          preloadedPlaybackId={preloadedPlaybackIds[userName.toLowerCase()]}
+                          revealedGifter={revealedGifters[userName.toLowerCase()]}
+                          onRevealGifter={() => handleRevealGifter(userName)}
+                          onVideoFetched={handleVideoFetched}
+                        />
                       </Dialog.Body>
                     </Dialog.Content>
                   </Dialog.Positioner>
