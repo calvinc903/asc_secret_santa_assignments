@@ -118,11 +118,7 @@ export default function FromPage() {
       <Stack alignItems="center">
         <Text fontSize={{ base: "lg", md: "4xl" }} color="white" fontWeight="bold" textAlign="center" px={4}>
           Reveal your Secret Santa Assignment!
-        </Text>
-        <Text fontSize={{ base: "lg", md: "4xl" }} color="white" fontWeight="bold" textAlign="center" px={4}>
-          What&apos;s your name?
-        </Text>
-        
+        </Text>        
         {/* User Selection Dropdown */}
         <Box position="relative" width={{ base: "90%", md: "400px" }} maxWidth="400px" ref={dropdownRef}>
           <Input
