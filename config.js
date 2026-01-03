@@ -12,7 +12,7 @@ const config = {
   
   // Archive cutoff year (show this year and earlier in archives)
   // Archives will show years up to and including this year
-  archiveYearCutoff: 2024,
+  archiveYearCutoff: 2025,
 
   
   // Database name for current year
