@@ -41,21 +41,9 @@ export async function GET(request) {
       const assignments = await db.collection('assignments').find({}).toArray();
       console.log(`[Archives] Year ${year}: Found ${assignments.length} assignments`);
       
-      // Try different collection names since it might differ between years
-      let youtubeVideos = await db.collection('youtubevideos').find({}).toArray();
-      console.log(`[Archives] Year ${year}: Found ${youtubeVideos.length} videos in 'youtubevideos'`);
-      
-      // If empty, try 'videos' collection
-      if (youtubeVideos.length === 0) {
-        youtubeVideos = await db.collection('videos').find({}).toArray();
-        console.log(`[Archives] Year ${year}: Found ${youtubeVideos.length} videos in 'videos'`);
-      }
-      
-      // If still empty, try 'youtube' collection (2024 uses this)
-      if (youtubeVideos.length === 0) {
-        youtubeVideos = await db.collection('youtube').find({}).toArray();
-        console.log(`[Archives] Year ${year}: Found ${youtubeVideos.length} videos in 'youtube'`);
-      }
+      // Get videos from youtube collection
+      const youtubeVideos = await db.collection('youtube').find({}).toArray();
+      console.log(`[Archives] Year ${year}: Found ${youtubeVideos.length} videos in 'youtube'`);
       
       if (youtubeVideos.length > 0) {
         console.log(`[Archives] Year ${year}: Sample video:`, youtubeVideos[0]);
